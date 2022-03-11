@@ -88,9 +88,14 @@ bool RandomEventFinder::init()
 bool RandomEventFinder::exec()
 {
   vector<JPetEvent> eventVec;
+  const int kMaxTimeWindowsStored = 8;
   if (auto timeWindow = dynamic_cast<const JPetTimeWindow* const>(fEvent))
   {
-    saveEvents(buildEvents(*timeWindow));
+    fTimeWindowContainer.push_back(*timeWindow);
+    if (fTimeWindowContainer.size() >= kMaxTimeWindowsStored) {
+       saveEvents(buildRandomEvents(fTimeWindowContainer));
+    }
+    //saveEvents(buildEvents(*timeWindow));
   }
   else
   {
@@ -111,6 +116,12 @@ void RandomEventFinder::saveEvents(const vector<JPetEvent>& events)
   {
     fOutputEvents->add<JPetEvent>(event);
   }
+}
+
+vector<JPetEvent> RandomEventFinder::buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows)
+{
+  vector<JPetEvent> eventVec;
+  return eventVec;
 }
 
 /**

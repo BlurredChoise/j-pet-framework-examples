@@ -45,6 +45,7 @@ public:
 protected:
   std::vector<JPetEvent> buildEvents(const JPetTimeWindow& hits);
   void saveEvents(const std::vector<JPetEvent>& event);
+  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows);
   void initialiseHistograms();
 
   const std::string kUseCorruptedHitsParamKey = "EventFinder_UseCorruptedHits_bool";
@@ -55,5 +56,8 @@ protected:
   bool fSaveControlHistos = true;
   double fEventTimeWindow = 5000.0;
   unsigned int fMinMultiplicity = 1;
+
+  /// probably should be deque or list instead
+  std::vector<JPetTimeWindow> fTimeWindowContainer;
 };
 #endif /* !EVENTFINDER_H */
