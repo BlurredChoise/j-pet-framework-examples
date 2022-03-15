@@ -39,7 +39,8 @@ int main(int argc, const char* argv[])
     manager.useTask("SignalFinder", "tslot", "pm.sig");
     manager.useTask("SignalTransformer", "pm.sig", "mtx.sig");
     manager.useTask("HitFinder", "mtx.sig", "hits");
-    manager.useTask("EventFinder", "hits", "unk.evt");
+    manager.useTask("RandomEventFinder", "hits", "unk.evt");
+    //manager.useTask("EventFinder", "hits", "unk.evt");
     manager.useTask("EventCategorizer", "unk.evt", "cat.evt");
 
     manager.run(argc, argv);
