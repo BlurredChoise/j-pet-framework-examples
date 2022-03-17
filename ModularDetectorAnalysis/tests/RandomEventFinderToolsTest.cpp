@@ -18,10 +18,23 @@
 
 #include "../RandomEventFinder.h"
 #include "../RandomEventFinderTools.h"
+#include <Hits/JPetRecoHit/JPetRecoHit.h>
 #include <boost/test/unit_test.hpp>
 
 auto epsilon = 0.0001;
 using namespace random_event_finder_tools;
+
+
+JPetTimeWindow fillTimeWindow(const std::vector<double>& hitsTimes)
+{
+  JPetTimeWindow window("JPetRecoHit");
+  for (auto time :hitsTimes) {
+    JPetRecoHit hit;
+    hit.setTime(time);
+    window.add(hit);
+  }
+  return window;
+}
 
 BOOST_AUTO_TEST_SUITE(RandomEventFinderToolsTestSuite)
 
@@ -35,7 +48,10 @@ BOOST_AUTO_TEST_CASE(buildRandomEvents_empty_test)
 
 BOOST_AUTO_TEST_CASE(buildRandomEvents_three_test)
 {
-  std::vector<JPetTimeWindow> timeWindows;
+  auto window1 = fillTimeWindow({2,10, 15, 20,30});
+  auto window2 = fillTimeWindow({2,7, 12, 23,33});
+  auto window3 = fillTimeWindow({1,5, 15, 17,31});
+  std::vector<JPetTimeWindow> timeWindows = {window1, window2, window3};
   auto results =buildRandomEvents(timeWindows);
   BOOST_REQUIRE(results.empty());
 
