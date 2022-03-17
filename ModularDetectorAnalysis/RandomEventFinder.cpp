@@ -13,7 +13,6 @@
  *  @file RandomEventFinder.cpp
  */
 
-using namespace std;
 
 #include "RandomEventFinder.h"
 #include "EventCategorizerTools.h"
@@ -24,6 +23,7 @@ using namespace std;
 #include <JPetWriter/JPetWriter.h>
 #include <iostream>
 
+using namespace std;
 using namespace jpet_options_tools;
 
 RandomEventFinder::RandomEventFinder(const char* name) : JPetUserTask(name) {}
@@ -124,11 +124,10 @@ vector<JPetEvent> RandomEventFinder::buildRandomEvents(const std::vector<JPetTim
   return eventVec;
 }
 
-/**
- * Main method of building Events - Hit in the Time slot are groupped
- * within time parameter, that can be set by the user
- */
-vector<JPetEvent> RandomEventFinder::buildEvents(const JPetTimeWindow& timeWindow)
+*
+ //Main method of building Events - Hit in the Time slot are groupped
+ //within time parameter, that can be set by the user
+std::vector<JPetEvent> RandomEventFinder::buildEvents(const JPetTimeWindow& timeWindow)
 {
   vector<JPetEvent> eventVec;
   const unsigned int nHits = timeWindow.getNumberOfEvents();
@@ -250,3 +249,4 @@ void RandomEventFinder::initialiseHistograms()
   vector<pair<unsigned, string>> binLabels = {make_pair(1, "GOOD"), make_pair(2, "CORRUPTED"), make_pair(3, "UNKNOWN"), make_pair(4, "")};
   getStatistics().setHistogramBinLabel("reco_flags_events", getStatistics().AxisLabel::kXaxis, binLabels);
 }
+

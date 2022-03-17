@@ -21,6 +21,9 @@
 //#include <JPetStatistics/JPetStatistics.h>
 //#include <TVector3.h>
 //#include <boost/property_tree/ptree.hpp>
+#include <JPetTimeWindow/JPetTimeWindow.h>
+#include <JPetEvent/JPetEvent.h>
+#include <vector>
 
 
 /**
@@ -29,6 +32,8 @@
  */
 namespace random_event_finder_tools
 {
+
+  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows);
 };
 
 #endif /* !RANDOMEVENTFINDERTOOLS_H */

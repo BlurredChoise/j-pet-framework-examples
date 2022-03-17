@@ -17,7 +17,13 @@
 //#include <Hits/JPetPhysRecoHit/JPetPhysRecoHit.h>
 //#include <TMath.h>
 //#include <TRandom.h>
-//#include <vector>
 
-using namespace std;
+namespace random_event_finder_tools
+{
 
+  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows)
+  {
+    std::vector<JPetEvent> eventVec;
+  return eventVec;
+  }
+}

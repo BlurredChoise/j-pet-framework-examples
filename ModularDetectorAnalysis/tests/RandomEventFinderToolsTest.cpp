@@ -17,11 +17,29 @@
 #define BOOST_TEST_MODULE HitFinderToolsTestSuite
 
 #include "../RandomEventFinder.h"
+#include "../RandomEventFinderTools.h"
 #include <boost/test/unit_test.hpp>
 
 auto epsilon = 0.0001;
+using namespace random_event_finder_tools;
 
 BOOST_AUTO_TEST_SUITE(RandomEventFinderToolsTestSuite)
+
+BOOST_AUTO_TEST_CASE(buildRandomEvents_empty_test)
+{
+  std::vector<JPetTimeWindow> timeWindows;
+  auto results =buildRandomEvents(timeWindows);
+  BOOST_REQUIRE(results.empty());
+
+}
+
+BOOST_AUTO_TEST_CASE(buildRandomEvents_three_test)
+{
+  std::vector<JPetTimeWindow> timeWindows;
+  auto results =buildRandomEvents(timeWindows);
+  BOOST_REQUIRE(results.empty());
+
+}
 
 //BOOST_AUTO_TEST_CASE(sortByTime_signals_test)
 //{
