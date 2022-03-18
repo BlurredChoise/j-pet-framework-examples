@@ -45,7 +45,6 @@ public:
 protected:
   std::vector<JPetEvent> buildEvents(const JPetTimeWindow& hits);
   void saveEvents(const std::vector<JPetEvent>& event);
-  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows);
   void initialiseHistograms();
 
   const std::string kUseCorruptedHitsParamKey = "EventFinder_UseCorruptedHits_bool";

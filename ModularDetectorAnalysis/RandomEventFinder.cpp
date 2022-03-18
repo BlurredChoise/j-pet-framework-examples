@@ -15,6 +15,7 @@
 
 
 #include "RandomEventFinder.h"
+#include "RandomEventFinderTools.h"
 #include "EventCategorizerTools.h"
 #include <Hits/JPetMCRecoHit/JPetMCRecoHit.h>
 #include <Hits/JPetRecoHit/JPetRecoHit.h>
@@ -25,6 +26,7 @@
 
 using namespace std;
 using namespace jpet_options_tools;
+using namespace random_event_finder_tools;
 
 RandomEventFinder::RandomEventFinder(const char* name) : JPetUserTask(name) {}
 
@@ -95,7 +97,6 @@ bool RandomEventFinder::exec()
     if (fTimeWindowContainer.size() >= kMaxTimeWindowsStored) {
        saveEvents(buildRandomEvents(fTimeWindowContainer));
     }
-    //saveEvents(buildEvents(*timeWindow));
   }
   else
   {
@@ -118,13 +119,7 @@ void RandomEventFinder::saveEvents(const vector<JPetEvent>& events)
   }
 }
 
-vector<JPetEvent> RandomEventFinder::buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows)
-{
-  vector<JPetEvent> eventVec;
-  return eventVec;
-}
 
-*
  //Main method of building Events - Hit in the Time slot are groupped
  //within time parameter, that can be set by the user
 std::vector<JPetEvent> RandomEventFinder::buildEvents(const JPetTimeWindow& timeWindow)

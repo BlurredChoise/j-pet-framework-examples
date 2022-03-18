@@ -32,8 +32,9 @@
  */
 namespace random_event_finder_tools
 {
-
+    
   std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows);
+  std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(const JPetTimeWindow& window1, const JPetTimeWindow& window2, const std::vector<int>& inUsedHits, double kTOFWindow =10);
 };
 
 #endif /* !RANDOMEVENTFINDERTOOLS_H */
