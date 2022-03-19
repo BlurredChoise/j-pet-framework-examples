@@ -68,9 +68,83 @@ BOOST_AUTO_TEST_CASE(buildRandomEvents_three_test)
 
 }
 
+/// No coincidences found
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_00)
+{
+  double tofWindow = 5;
+  auto window1 = fillTimeWindow({1});
+  auto window2 = fillTimeWindow({10});
+  std::vector<int> usedHits ={0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, tofWindow);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE(events.empty());
+}
 
 
-BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_three_test)
+/// One coincidence found
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_01a)
+{
+  double tofWindow = 5;
+  auto window1 = fillTimeWindow({1});
+  auto window2 = fillTimeWindow({4});
+  std::vector<int> usedHits ={0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, tofWindow);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE_EQUAL(events.size(), 1);
+  auto times = getTimesOfCoincidences(events);
+  BOOST_REQUIRE_CLOSE(times[0].first, 1, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 4, epsilon);
+}
+
+/// One coincidence found
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_01b)
+{
+  double tofWindow = 5;
+  auto window1 = fillTimeWindow({4});
+  auto window2 = fillTimeWindow({1});
+  std::vector<int> usedHits ={0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, tofWindow);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE_EQUAL(events.size(), 1);
+  auto times = getTimesOfCoincidences(events);
+  BOOST_REQUIRE_CLOSE(times[0].first, 4, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 1, epsilon);
+}
+
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_02a)
+{
+  double tofWindow = 5;
+  auto window1 = fillTimeWindow({1,10});
+  auto window2 = fillTimeWindow({9});
+  std::vector<int> usedHits ={0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, tofWindow);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE_EQUAL(events.size(), 1);
+  auto times = getTimesOfCoincidences(events);
+  BOOST_REQUIRE_CLOSE(times[0].first, 10, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 9, epsilon);
+}
+
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_02b)
+{
+  double tofWindow = 5;
+  auto window1 = fillTimeWindow({10});
+  auto window2 = fillTimeWindow({1,9});
+  std::vector<int> usedHits ={0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, tofWindow);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE_EQUAL(events.size(), 1);
+  auto times = getTimesOfCoincidences(events);
+  BOOST_REQUIRE_CLOSE(times[0].first, 10, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 9, epsilon);
+}
+
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test)
 {
   auto window1 = fillTimeWindow({1,10, 20, 33, 41});
   auto window2 = fillTimeWindow({4, 14, 26,34});
@@ -80,12 +154,34 @@ BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_three_test)
   auto results = getCoincidencesFromWindows(window1, window2, usedHits, 5);
   auto used = results.first;
   auto events = results.second;
-  //BOOST_REQUIRE_EQUAL(events.size(), 3);
+  BOOST_REQUIRE_EQUAL(events.size(), 3);
   auto times = getTimesOfCoincidences(events);
-  for(auto t :times) {
-    std::cout << "t1 = "<< t.first << " t2 =" << t.second << std::endl;
-  }
+  BOOST_REQUIRE_CLOSE(times[0].first, 1, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 4, epsilon);
+  BOOST_REQUIRE_CLOSE(times[1].first, 10, epsilon);
+  BOOST_REQUIRE_CLOSE(times[1].second, 14, epsilon);
+  BOOST_REQUIRE_CLOSE(times[2].first, 33, epsilon);
+  BOOST_REQUIRE_CLOSE(times[2].second, 34, epsilon);
+}
 
+BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test2)
+{
+  auto window1 = fillTimeWindow({4,10, 20, 34, 41});
+  auto window2 = fillTimeWindow({1, 14, 26,33});
+  /// from those sets with TOF size 5  we expect the following pairs
+  /// {1,4} , {10,14}, {33,34}
+  std::vector<int> usedHits ={0,0,0,0,0};
+  auto results = getCoincidencesFromWindows(window1, window2, usedHits, 5);
+  auto used = results.first;
+  auto events = results.second;
+  BOOST_REQUIRE_EQUAL(events.size(), 3);
+  auto times = getTimesOfCoincidences(events);
+  BOOST_REQUIRE_CLOSE(times[0].first, 4, epsilon);
+  BOOST_REQUIRE_CLOSE(times[0].second, 1, epsilon);
+  BOOST_REQUIRE_CLOSE(times[1].first, 10, epsilon);
+  BOOST_REQUIRE_CLOSE(times[1].second, 14, epsilon);
+  BOOST_REQUIRE_CLOSE(times[2].first, 34, epsilon);
+  BOOST_REQUIRE_CLOSE(times[2].second, 33, epsilon);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
