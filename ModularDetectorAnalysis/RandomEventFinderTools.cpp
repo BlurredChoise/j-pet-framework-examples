@@ -20,6 +20,17 @@
 
 namespace random_event_finder_tools
 {
+
+bool isCorrupted(const JPetBaseHit *hit) {
+  if (dynamic_cast<const JPetRecoHit *>(hit)) {
+    if (dynamic_cast<const JPetRecoHit *>(hit)->getRecoFlag() ==
+        JPetRecoHit::Corrupted) {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
     const JPetTimeWindow &window1, const JPetTimeWindow &window2,
     const std::vector<int> &inUsedHits, double kTOFWindow) {
@@ -32,6 +43,7 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
 
   assert(usedHits.size() == nHits2);
 
+  /// The current number of hits processed in the second time window
   unsigned int count2 = 0;
 
   for (int i = 0; i < nHits1; i++) {
@@ -57,6 +69,9 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
                   << hit2->getTime() << std::endl;
         JPetEvent event;
         event.setEventType(JPetEventType::kUnknown);
+        if (isCorrupted(hit1) || isCorrupted(hit2)) {
+          event.setRecoFlag(JPetEvent::Corrupted);
+        }
         event.addHit(hit1);
         event.addHit(hit2);
         usedHits[j] = 1;
@@ -64,141 +79,34 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
         count2 = j + 1;
         break;
       } else {
-        /// If the second hit is later in time than first hit but not within the TOF window
-        /// then we increment the first hit and keep the same second hit, to make the difference smaller
+        /// If the second hit is later in time than first hit but not within the
+        /// TOF window then we take the next hit from the first container and
+        /// keep the same second hit, to make the difference smaller
         if (tDiff > 0) {
           count2 = j;
           break;
-
         }
       }
     }
   }
-    //while (count1 < nHits1 &&) {
-      //auto hit = dynamic_cast<const JPetBaseHit *>(&window1.operator[](count1));
-      //std::cout << "find hit from the first window with the time ="
-                //<< hit->getTime() << std::endl;
-      //JPetEvent event;
-      //event.setEventType(JPetEventType::kUnknown);
+  return {usedHits, eventVec};
+}
 
-      //while (count2 < nHits2) {
-        //if (usedHits[count2] == 1) {
-          //count2++;
-          //continue;
-        //}
-        //auto nextHit =
-            //dynamic_cast<const JPetBaseHit *>(&window2.operator[](count2));
-        //std::cout << "find hit from the second window with the time ="
-                  //<< nextHit->getTime() << std::endl;
-        //auto tDiff = fabs(nextHit->getTime() - hit->getTime());
-        //if (tDiff < kTOFWindow) {
+std::vector<JPetEvent>
+buildRandomEvents(const std::vector<JPetTimeWindow> &timeWindows) {
+  assert(timeWindows.size() >= 3);
+  std::vector<JPetEvent> eventVec;
 
-          //std::cout << "hits within the TOFtime window" << std::endl;
-          //std::cout << "hit from the first window with the time ="
-                    //<< hit->getTime() << std::endl;
-          //std::cout << "hit from the second window with the time ="
-                    //<< nextHit->getTime() << std::endl;
-          ////// Reco flag check
-          //// if (dynamic_cast<const JPetRecoHit *>(nextHit)) {
-          //// if (dynamic_cast<const JPetRecoHit *>(nextHit)->getRecoFlag() ==
-          //// JPetRecoHit::Corrupted) {
-          //// event.setRecoFlag(JPetEvent::Corrupted);
-          ////}
-          ////}
-          //event.addHit(hit);
-          //event.addHit(nextHit);
-          //usedHits[count2] = 1;
-          //count2++;
-          //break;
-        //}
-        //if (tDiff >kTOFWindow) {
-          //break;
-        //}
-          
-      //}
-      //count1++;
+  const int kTimeWindowShift =
+      2; // we compare the hits e.g. from n-th and n-th+2 time window,
+  for (auto &timeWindow : timeWindows) {
+    JPetEvent event;
 
-      //if (event.getHits().size() >= 2) {
-        //eventVec.push_back(event);
-      //}
-    //}
-
-    return {usedHits, eventVec};
-  }
-
-  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows)
-  {
-    assert(timeWindows.size() >=3);
-    std::vector<JPetEvent> eventVec;
-
-    const int kTimeWindowShift = 2; // we compare the hits e.g. from n-th and n-th+2 time window,  
-    for (auto & timeWindow :timeWindows)
-    {
-      const unsigned int nHits = timeWindow.getNumberOfEvents();
-      unsigned int count = 0;
-
-      while (count < nHits) {
-        auto hit =
-            dynamic_cast<const JPetBaseHit *>(&timeWindow.operator[](count));
-
-         //If Event contains hits of reco class, then check corrupted data
-         //filter
-         //if (dynamic_cast<const JPetRecoHit*>(hit))
-        //{
-         //if (!fUseCorruptedHits && dynamic_cast<const
-         //JPetRecoHit*>(hit)->getRecoFlag() == JPetRecoHit::Corrupted)
-        //{
-         //count++;
-         //continue;
-        //}
-        //}
-
-        // Creating new event with the first hit
-        JPetEvent event;
-        event.setEventType(JPetEventType::kUnknown);
-        event.addHit(hit);
-
-        // If hit is reco class, then check set corrupted data flag
-        // approptiately
-        if (dynamic_cast<const JPetRecoHit *>(hit)) {
-          if (dynamic_cast<const JPetRecoHit *>(hit)->getRecoFlag() ==
-              JPetRecoHit::Good) {
-            event.setRecoFlag(JPetEvent::Good);
-          } else if (dynamic_cast<const JPetRecoHit *>(hit)->getRecoFlag() ==
-                     JPetRecoHit::Corrupted) {
-            event.setRecoFlag(JPetEvent::Corrupted);
-          }
-        }
-
-        // Checking, if following hits fulfill time window condition, then
-        // moving the interator
-        unsigned int nextCount = 1;
-        while (count + nextCount < nHits) {
-          auto nextHit = dynamic_cast<const JPetBaseHit *>(
-              &timeWindow.operator[](count + nextCount));
-          auto tDiff = fabs(nextHit->getTime() - hit->getTime());
-          if (tDiff < 10) {
-            // Reco flag check
-            if (dynamic_cast<const JPetRecoHit *>(nextHit)) {
-              if (dynamic_cast<const JPetRecoHit *>(nextHit)->getRecoFlag() ==
-                  JPetRecoHit::Corrupted) {
-                event.setRecoFlag(JPetEvent::Corrupted);
-              }
-            }
-            event.addHit(nextHit);
-            nextCount++;
-          } else {
-            break;
-          }
-        }
-        count += nextCount;
-
-        if (event.getHits().size() >= 3) {
-          eventVec.push_back(event);
-        }
-      }
+    if (event.getHits().size() >= 3) {
+      eventVec.push_back(event);
+    }
   }
 
   return eventVec;
-  }
+}
 }
