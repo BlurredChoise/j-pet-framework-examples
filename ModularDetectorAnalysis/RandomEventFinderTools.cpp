@@ -46,27 +46,18 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
   /// The current number of hits processed in the second time window
   unsigned int count2 = 0;
 
-  for (int i = 0; i < nHits1; i++) {
+  for (unsigned int i = 0; i < nHits1; i++) {
     auto hit1 = dynamic_cast<const JPetBaseHit *>(&window1.operator[](i));
-    std::cout << "find hit from the first window with the time ="
-              << hit1->getTime() << std::endl;
-    for (int j = count2; j < nHits2; j++) {
+    for (unsigned int j = count2; j < nHits2; j++) {
       if (usedHits[j] == 1) {
         continue;
       }
       auto hit2 = dynamic_cast<const JPetBaseHit *>(&window2.operator[](j));
-      std::cout << "find hit from the second window with the time ="
-                << hit2->getTime() << std::endl;
       auto tDiff = hit2->getTime() - hit1->getTime();
       auto absTDiff = fabs(tDiff);
 
       if (absTDiff < kTOFWindow) {
 
-        std::cout << "hits within the TOFtime window" << std::endl;
-        std::cout << "hit from the first window with the time ="
-                  << hit1->getTime() << std::endl;
-        std::cout << "hit from the second window with the time ="
-                  << hit2->getTime() << std::endl;
         JPetEvent event;
         event.setEventType(JPetEventType::kUnknown);
         if (isCorrupted(hit1) || isCorrupted(hit2)) {
