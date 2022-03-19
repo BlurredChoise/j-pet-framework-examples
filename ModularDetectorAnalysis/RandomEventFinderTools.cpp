@@ -92,26 +92,4 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
   return {usedHits, eventVec};
 }
 
-std::vector<JPetEvent>
-buildRandomEvents(const std::vector<JPetTimeWindow> &timeWindows) {
-  assert(timeWindows.size() >= 3);
-  //std::vector<JPetEvent> eventVec;
-
-  const double kTOFWindow = 5;
-  /// we compare the hits e.g. from n-th and n-th+2 time window,
-  const int kTimeWindowShift = 2;
-  //for (auto &timeWindow : timeWindows) {
-  auto window1 = timeWindows[0];
-  auto window2 = timeWindows[1];
-    auto results = getCoincidencesFromWindows(
-    window1, window2,
-    {}, kTOFWindow);
-    //JPetEvent event;
-    //if (event.getHits().size() >= 3) {
-      //eventVec.push_back(event);
-    //}
-  //}
-
-  return results.second;
-}
 }

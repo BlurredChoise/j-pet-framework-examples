@@ -49,25 +49,6 @@ JPetTimeWindow fillTimeWindow(const std::vector<double>& hitsTimes)
 
 BOOST_AUTO_TEST_SUITE(RandomEventFinderToolsTestSuite)
 
-BOOST_AUTO_TEST_CASE(buildRandomEvents_empty_test)
-{
-  std::vector<JPetTimeWindow> timeWindows;
-  auto results =buildRandomEvents(timeWindows);
-  BOOST_REQUIRE(results.empty());
-
-}
-
-BOOST_AUTO_TEST_CASE(buildRandomEvents_three_test)
-{
-  auto window1 = fillTimeWindow({2,10, 15, 20,30});
-  auto window2 = fillTimeWindow({2,7, 12, 23,33});
-  auto window3 = fillTimeWindow({1,5, 15, 17,31});
-  std::vector<JPetTimeWindow> timeWindows = {window1, window2, window3};
-  auto results =buildRandomEvents(timeWindows);
-  BOOST_REQUIRE(results.empty());
-
-}
-
 /// No coincidences found
 BOOST_AUTO_TEST_CASE(getCoincidencesFromWindows_test_00)
 {

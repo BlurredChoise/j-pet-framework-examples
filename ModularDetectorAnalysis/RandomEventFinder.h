@@ -21,8 +21,7 @@
 #include <JPetUserTask/JPetUserTask.h>
 #include <map>
 #include <vector>
-
-class JPetWriter;
+#include <queue>
 
 /**
  * @brief User Task creating JPetEvent from hits
@@ -43,7 +42,7 @@ public:
   virtual bool terminate() override;
 
 protected:
-  std::vector<JPetEvent> buildEvents(const JPetTimeWindow& hits);
+  void findRandomsAndSaveEventsIfAnyFound();
   void saveEvents(const std::vector<JPetEvent>& event);
   void initialiseHistograms();
 
@@ -56,7 +55,6 @@ protected:
   double fEventTimeWindow = 5000.0;
   unsigned int fMinMultiplicity = 1;
 
-  /// probably should be deque or list instead
-  std::vector<JPetTimeWindow> fTimeWindowContainer;
+  std::queue<JPetTimeWindow> fTimeWindowContainer;
 };
 #endif /* !EVENTFINDER_H */

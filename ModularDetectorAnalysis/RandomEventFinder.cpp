@@ -89,25 +89,36 @@ bool RandomEventFinder::init()
 
 bool RandomEventFinder::exec()
 {
-  vector<JPetEvent> eventVec;
-  const int kMaxTimeWindowsStored = 8;
+  const int kMaxTimeWindowsStored = 3;
   if (auto timeWindow = dynamic_cast<const JPetTimeWindow* const>(fEvent))
   {
-    fTimeWindowContainer.push_back(*timeWindow);
-    if (fTimeWindowContainer.size() >= kMaxTimeWindowsStored) {
-       saveEvents(buildRandomEvents(fTimeWindowContainer));
-    }
+    fTimeWindowContainer.push(*timeWindow);
   }
   else
   {
     return false;
+  }
+  if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
+     auto window1 = fTimeWindowContainer.front();
+     auto window2 = fTimeWindowContainer.back();
+     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
+     saveEvents(results.second);
+     fTimeWindowContainer.pop(); ///remove first element
   }
   return true;
 }
 
 bool RandomEventFinder::terminate()
 {
+  const int kMaxTimeWindowsStored = 3;
   INFO("Event fiding ended.");
+  if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
+     auto window1 = fTimeWindowContainer.front();
+     auto window2 = fTimeWindowContainer.back();
+     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
+     saveEvents(results.second);
+     fTimeWindowContainer.pop(); ///remove first element
+  }
   return true;
 }
 
