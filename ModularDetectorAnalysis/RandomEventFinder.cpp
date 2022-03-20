@@ -93,9 +93,15 @@ void RandomEventFinder::findRandomsAndSaveEventsIfAnyFound()
   if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
      auto window1 = fTimeWindowContainer.front();
      auto window2 = fTimeWindowContainer.back();
-     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
+     auto usedHitsWindow1 = fUsedHits.front();
+     auto results = getCoincidencesFromWindows(window1, window2, usedHitsWindow1, 2);
      saveEvents(results.second);
-     fTimeWindowContainer.pop(); ///remove first element
+     fTimeWindowContainer.pop(); ///remove window1 
+
+     fUsedHits[kMaxTimeWindowsStored-1] = results.first; /// replace used hits of window2
+     fUsedHits.pop_front(); // remove used hits of window1
+      
+     
   }
 }
 
@@ -104,6 +110,8 @@ bool RandomEventFinder::exec()
   if (auto timeWindow = dynamic_cast<const JPetTimeWindow* const>(fEvent))
   {
     fTimeWindowContainer.push(*timeWindow);
+    std::vector<int> usedHits(timeWindow->getNumberOfEvents(), 0);
+    fUsedHits.push_back(usedHits);
   }
   else
   {
