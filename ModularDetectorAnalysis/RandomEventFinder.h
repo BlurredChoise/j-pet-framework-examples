@@ -55,6 +55,7 @@ protected:
   double fEventTimeWindow = 5000.0;
   unsigned int fMinMultiplicity = 1;
 
+  std::queue<std::vector<int>> fUsedHits;
   std::queue<JPetTimeWindow> fTimeWindowContainer;
 };
 #endif /* !EVENTFINDER_H */

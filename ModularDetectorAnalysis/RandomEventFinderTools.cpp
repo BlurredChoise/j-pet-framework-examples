@@ -34,12 +34,12 @@ bool isCorrupted(const JPetBaseHit *hit) {
 std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
     const JPetTimeWindow &window1, const JPetTimeWindow &window2,
     const std::vector<int> &inUsedHits, double kTOFWindow) {
-  auto usedHits(inUsedHits);
   std::vector<JPetEvent> eventVec;
 
   const unsigned int nHits1 = window1.getNumberOfEvents();
   const unsigned int nHits2 = window2.getNumberOfEvents();
-  // unsigned int count1 = 0;
+  auto usedHitsWindow1(inUsedHits);
+  std::vector<int> usedHitsWindow2(nHits2, 0); 
 
   assert(usedHits.size() == nHits2);
 
@@ -49,7 +49,7 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
   for (unsigned int i = 0; i < nHits1; i++) {
     auto hit1 = dynamic_cast<const JPetBaseHit *>(&window1.operator[](i));
     for (unsigned int j = count2; j < nHits2; j++) {
-      if (usedHits[j] == 1) {
+      if (usedHitsWindow1[j] == 1) {
         continue;
       }
       auto hit2 = dynamic_cast<const JPetBaseHit *>(&window2.operator[](j));
@@ -65,7 +65,7 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
         }
         event.addHit(hit1);
         event.addHit(hit2);
-        usedHits[j] = 1;
+        usedHitsWindow2[j] = 1;
         eventVec.push_back(event);
         count2 = j + 1;
         break;
@@ -80,7 +80,7 @@ std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(
       }
     }
   }
-  return {usedHits, eventVec};
+  return {usedHitsWindow2, eventVec};
 }
 
 }

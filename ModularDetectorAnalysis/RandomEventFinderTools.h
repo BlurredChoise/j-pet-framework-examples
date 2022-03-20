@@ -34,8 +34,12 @@ namespace random_event_finder_tools
 {
     
   bool isCorrupted(const JPetBaseHit *hit);
-  std::vector<JPetEvent> buildRandomEvents(const std::vector<JPetTimeWindow>& timeWindows);
   /// We assume that the hits  are ordered in time within given JPetTimeWindow
+  /// We assume that window1 was earlier than window2
+  /// inUsedHits is a vector corresponding to 0 or 1 flags which indicate if given 
+  /// hit was previously used in window1, if it is set to 1, then it will be ignored
+  /// during the processing
+  //  @return a vector of used hits for window2 and a vector of created events as a pair 
   std::pair<std::vector<int>, std::vector<JPetEvent>> getCoincidencesFromWindows(const JPetTimeWindow& window1, const JPetTimeWindow& window2, const std::vector<int>& inUsedHits, double kTOFWindow =10);
 };
 

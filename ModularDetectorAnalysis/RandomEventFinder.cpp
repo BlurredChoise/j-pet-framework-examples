@@ -87,9 +87,20 @@ bool RandomEventFinder::init()
   return true;
 }
 
-bool RandomEventFinder::exec()
+void RandomEventFinder::findRandomsAndSaveEventsIfAnyFound()
 {
   const int kMaxTimeWindowsStored = 3;
+  if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
+     auto window1 = fTimeWindowContainer.front();
+     auto window2 = fTimeWindowContainer.back();
+     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
+     saveEvents(results.second);
+     fTimeWindowContainer.pop(); ///remove first element
+  }
+}
+
+bool RandomEventFinder::exec()
+{
   if (auto timeWindow = dynamic_cast<const JPetTimeWindow* const>(fEvent))
   {
     fTimeWindowContainer.push(*timeWindow);
@@ -98,27 +109,14 @@ bool RandomEventFinder::exec()
   {
     return false;
   }
-  if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
-     auto window1 = fTimeWindowContainer.front();
-     auto window2 = fTimeWindowContainer.back();
-     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
-     saveEvents(results.second);
-     fTimeWindowContainer.pop(); ///remove first element
-  }
+  findRandomsAndSaveEventsIfAnyFound();
   return true;
 }
 
 bool RandomEventFinder::terminate()
 {
-  const int kMaxTimeWindowsStored = 3;
   INFO("Event fiding ended.");
-  if (fTimeWindowContainer.size() == kMaxTimeWindowsStored) {
-     auto window1 = fTimeWindowContainer.front();
-     auto window2 = fTimeWindowContainer.back();
-     auto results = getCoincidencesFromWindows(window1, window2, {}, 2);
-     saveEvents(results.second);
-     fTimeWindowContainer.pop(); ///remove first element
-  }
+  findRandomsAndSaveEventsIfAnyFound();
   return true;
 }
 
@@ -131,110 +129,6 @@ void RandomEventFinder::saveEvents(const vector<JPetEvent>& events)
 }
 
 
- //Main method of building Events - Hit in the Time slot are groupped
- //within time parameter, that can be set by the user
-std::vector<JPetEvent> RandomEventFinder::buildEvents(const JPetTimeWindow& timeWindow)
-{
-  vector<JPetEvent> eventVec;
-  const unsigned int nHits = timeWindow.getNumberOfEvents();
-  unsigned int count = 0;
-
-  while (count < nHits)
-  {
-    auto hit = dynamic_cast<const JPetBaseHit*>(&timeWindow.operator[](count));
-
-    // If Event contains hits of reco class, then check corrupted data filter
-    if (dynamic_cast<const JPetRecoHit*>(hit))
-    {
-      if (!fUseCorruptedHits && dynamic_cast<const JPetRecoHit*>(hit)->getRecoFlag() == JPetRecoHit::Corrupted)
-      {
-        count++;
-        continue;
-      }
-    }
-
-    // Creating new event with the first hit
-    JPetEvent event;
-    event.setEventType(JPetEventType::kUnknown);
-    event.addHit(hit);
-
-    // If hit is reco class, then check set corrupted data flag approptiately
-    if (dynamic_cast<const JPetRecoHit*>(hit))
-    {
-      if (dynamic_cast<const JPetRecoHit*>(hit)->getRecoFlag() == JPetRecoHit::Good)
-      {
-        event.setRecoFlag(JPetEvent::Good);
-      }
-      else if (dynamic_cast<const JPetRecoHit*>(hit)->getRecoFlag() == JPetRecoHit::Corrupted)
-      {
-        event.setRecoFlag(JPetEvent::Corrupted);
-      }
-    }
-
-    // If this is a Monte Carlo generated hit, set flag to MC
-    if (dynamic_cast<const JPetMCRecoHit*>(hit) || dynamic_cast<const JPetRawMCHit*>(hit))
-    {
-      event.setRecoFlag(JPetEvent::MC);
-    }
-
-    // Checking, if following hits fulfill time window condition, then moving the interator
-    unsigned int nextCount = 1;
-    while (count + nextCount < nHits)
-    {
-      auto nextHit = dynamic_cast<const JPetBaseHit*>(&timeWindow.operator[](count + nextCount));
-      auto tDiff = fabs(nextHit->getTime() - hit->getTime());
-      getStatistics().fillHistogram("event_hits_tdiff_all", tDiff);
-      if (tDiff < fEventTimeWindow)
-      {
-        // Reco flag check
-        if (dynamic_cast<const JPetRecoHit*>(nextHit))
-        {
-          if (dynamic_cast<const JPetRecoHit*>(nextHit)->getRecoFlag() == JPetRecoHit::Corrupted)
-          {
-            event.setRecoFlag(JPetEvent::Corrupted);
-          }
-        }
-        event.addHit(nextHit);
-        nextCount++;
-      }
-      else
-      {
-        if (fSaveControlHistos)
-        {
-          getStatistics().fillHistogram("event_hits_tdiff_rejected", tDiff);
-        }
-        break;
-      }
-    }
-    count += nextCount;
-    if (fSaveControlHistos)
-    {
-      getStatistics().fillHistogram("event_multi_all", event.getHits().size());
-      if (event.getRecoFlag() == JPetEvent::Good)
-      {
-        getStatistics().fillHistogram("reco_flags_events", 1);
-      }
-      else if (event.getRecoFlag() == JPetEvent::Corrupted)
-      {
-        getStatistics().fillHistogram("reco_flags_events", 2);
-      }
-      else
-      {
-        getStatistics().fillHistogram("reco_flags_events", 3);
-      }
-    }
-
-    if (event.getHits().size() >= fMinMultiplicity)
-    {
-      eventVec.push_back(event);
-      if (fSaveControlHistos)
-      {
-        getStatistics().fillHistogram("event_multi_selected", event.getHits().size());
-      }
-    }
-  }
-  return eventVec;
-}
 
 void RandomEventFinder::initialiseHistograms()
 {
