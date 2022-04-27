@@ -13,7 +13,7 @@
  *  @file main.cpp
  */
 
-#include "../LargeBarrelAnalysis/EventCategorizer.h"
+#include "EventCategorizer.h"
 #include "../LargeBarrelAnalysis/EventFinder.h"
 #include "../LargeBarrelAnalysis/HitFinder.h"
 #include "../LargeBarrelAnalysis/SignalFinder.h"

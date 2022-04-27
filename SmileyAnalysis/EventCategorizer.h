@@ -48,15 +48,44 @@ protected:
 	const std::string kDeexTOTCutMaxParamKey = "Deex_Categorizer_TOT_Cut_Max_float";
 	const std::string kMaxTimeDiffParamKey = "EventCategorizer_MaxTimeDiff_float";
 	const std::string kSaveControlHistosParamKey = "Save_Control_Histograms_bool";
-    const std::string kTOTCalculationType = "HitFinder_TOTCalculationType_std::string";
+  const std::string kTOTCalculationType = "HitFinder_TOTCalculationType_std::string";
+  const std::string kAnnihTOTCutMin = "EventCategorizer_AnnihTOTCutMin_float";
+  const std::string kAnnihTOTCutMax = "EventCategorizer_AnnihTOTCutMax_float";
 	void saveEvents(const std::vector<JPetEvent>& event);
 	double fScatterTOFTimeDiff = 2000.0;
 	double fB2BSlotThetaDiff = 3.0;
 	double fDeexTOTCutMin = 30000.0;
 	double fDeexTOTCutMax = 50000.0;
 	double fMaxTimeDiff = 1000.;
+  double fAnnihTOTCutMin = 500.0;//[ps]
+  double fAnnihTOTCutMax = 19000.0;//[ps]
 	bool fSaveControlHistos = true;
-    std::string fTOTCalculationType = "";
+  std::string fTOTCalculationType = "";
 	void initialiseHistograms();
+  //DVDFilter parameters
+  ////Left ellipse
+  const std::string kEllipseLeftX0 = "EventCategorizer_EllipseLeft_X0_float";
+  const std::string kEllipseLeftY0 = "EventCategorizer_EllipseLeft_Y0_float";
+  const std::string kEllipseLeftRX = "EventCategorizer_EllipseLeft_RX_float";
+  const std::string kEllipseLeftRY = "EventCategorizer_EllipseLeft_RY_float";
+  const std::string kEllipseLeftRotAngle = "EventCategorizer_EllipseLeft_RotAngle_float";
+  double fEllipseLeftX0 = -2.30769; //ns
+  double fEllipseLeftY0 = 0.475791; //ns
+  double fEllipseLeftRX = 1.7; //ns
+  double fEllipseLeftRY = 0.7; //ns
+  double fEllipseLeftRotAngle = 30;//deg
+  //Right ellipse
+  const std::string kEllipseRightX0 = "EventCategorizer_EllipseRight_X0_float";
+  const std::string kEllipseRightY0 = "EventCategorizer_EllipseRight_Y0_float";
+  const std::string kEllipseRightRX = "EventCategorizer_EllipseRight_RX_float";
+  const std::string kEllipseRightRY = "EventCategorizer_EllipseRight_RY_float";
+  const std::string kEllipseRightRotAngle = "EventCategorizer_EllipseRight_RotAngle_float";
+  double fEllipseRightX0 = 0.445344; //ns
+  double fEllipseRightY0 = -2.42528; //ns
+  double fEllipseRightRX = 1.7; //ns
+  double fEllipseRightRY = 0.7; //ns
+  double fEllipseRightRotAngle = 60; //deg
+  void passedUpTo(const uint x);
+  
 };
 #endif /* !EVENTCATEGORIZER_H */

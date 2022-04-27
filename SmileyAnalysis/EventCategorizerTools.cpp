@@ -20,6 +20,28 @@
 
 using namespace std;
 
+bool Ellipse::isInside( const double& x, const double& y ) const
+{
+  double A = TMath::Power( ( ( x - fXCenter) * fCosTheta + ( y - fYCenter ) * fSinTheta ) / fRadiusX , 2 );
+  double B = TMath::Power( ( ( x - fXCenter) * fSinTheta - ( y - fYCenter ) * fCosTheta ) / fRadiusY , 2 );
+
+  return A + B < 1.0;
+}
+
+void Ellipse::setParamaters( double x0, double y0, double rx, double ry, double theta )
+{
+ fXCenter = x0;
+ fYCenter = y0;
+ fCosTheta = TMath::Cos( TMath::DegToRad() * theta );
+ fSinTheta = TMath::Sin( TMath::DegToRad() * theta );
+ fRadiusX = rx;
+ fRadiusY = ry;
+}
+
+bool DVDFilter::IsInRight(const double& delta1i, const double& delta2i) const { return fRightEllipse.isInside(delta1i,delta2i); }
+
+bool DVDFilter::IsInLeft(const double& delta1i, const double& delta2i) const { return fLeftEllipse.isInside(delta1i,delta2i);}
+
 /**
 * Method for determining type of event - back to back 2 gamma
 */
@@ -252,3 +274,269 @@ double EventCategorizerTools::calculatePlaneCenterDistance(
     return -1.;
   }
 }
+
+/**
+** Check if hit is in active range of scintillator - this means hit is not in range covered by detectors (last 2cm of both sides)
+** |--|---------------------|--|
+**  where |--| is a part of scintillator covered by detector
+**/
+bool EventCategorizerTools::isInActiveScintillatorRange(JPetStatistics& stats,const JPetHit& hit)
+{
+  stats.fillHistogram("GHF4HA_Zpos",hit.getPosZ());
+  return fabs(hit.getPosZ()) < 23.0;
+}
+
+/**
+** Extracts useful hits for 2+2 gits analysis
+** Conditions:
+** 1. Is not prompt gamma hit
+** 2. Z position of hit is in range |z| < 23 cm
+**/
+std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event,const double& deexTOTCutMin,const std::string& fTOTCalculationType)
+{
+  std::vector<JPetHit> hits;
+  for (uint i = 0; i < event.getHits().size(); i++)
+  {
+    JPetHit hit = event.getHits().at(i);
+    bool passed = isNotPromptHit(stats,hit,deexTOTCutMin,fTOTCalculationType);
+    stats.getEffiHisto("effHitsPreparation")->Fill(passed,0);
+    if (!passed) {continue;} //it is a prompt gamma's hit - skip this hit
+    passed = isInActiveScintillatorRange(stats,hit);
+    stats.getEffiHisto("effHitsPreparation")->Fill(passed,1);
+    if (!passed) {continue;} //it is a hit inside a part of scintillator covered by a detector
+    hits.push_back(event.getHits().at(i));//save this hit - it can be the annihilator or scattered gamma hit
+  }
+  return hits;
+}
+
+
+/**
+** Determines if given event is useful for 4 hist analysis (2+2).
+** Conditions:
+** 1. at least 4 hits
+** 2. found annihilation gammas
+** Conditions for annihilation gammas:
+** 2.1 angle between angles is around 180 deg
+** 2.2 time difference between 2 hits is lower then given by user.
+**/
+bool EventCategorizerTools::checkFor2Gamma4Hits(
+  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const double& b2bSlotThetaDiff, const double& b2bTimeDiff, const double& annihTOTMin, const double& annihTOTMax,const std::string& fTOTCalculationType)
+{
+  if (hits.size() < 4) {
+    return false;
+  }
+  uint potential_ann_gamma_1_index = 0;//potential 1st annihilation gamma hit index in hits list
+  uint potential_ann_gamma_2_index = 0;//potential 2nd annihilation gamma hit index in hits list
+  bool passed;
+  
+  //compare all hits
+  for (uint i = 0; i < hits.size(); i++) {
+    for (uint j = i + 1; j < hits.size(); j++) {
+      JPetHit firstHit, secondHit;
+      //First hit is allways a hit which interacted earlien then other
+      if (hits.at(i).getTime() < hits.at(j).getTime()) {
+        firstHit = hits.at(i);
+        secondHit = hits.at(j);
+        potential_ann_gamma_1_index = i;
+        potential_ann_gamma_2_index = j;
+      } else {
+        firstHit = hits.at(j);
+        secondHit = hits.at(i);
+        potential_ann_gamma_1_index = j;
+        potential_ann_gamma_2_index = i; 
+      }
+      
+      // Checking for back to back
+      double timeDiff = fabs(firstHit.getTime() - secondHit.getTime());
+      double deltaLor = (secondHit.getTime() - firstHit.getTime()) * kLightVelocity_cm_ps / 2.;
+      double theta1 = min(firstHit.getBarrelSlot().getTheta(), secondHit.getBarrelSlot().getTheta());
+      double theta2 = max(firstHit.getBarrelSlot().getTheta(), secondHit.getBarrelSlot().getTheta());
+      double thetaDiff = min(theta2 - theta1, 360.0 - theta2 + theta1);
+      double distance =  calculateDistance(firstHit, secondHit);
+      double tot_1 = HitFinderTools::calculateTOT(firstHit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
+      double tot_2 = HitFinderTools::calculateTOT(secondHit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
+      //Fill histograms
+      stats.fillHistogram("CF2G4H_AllHits_TimeDiff", timeDiff);
+      stats.fillHistogram("CF2G4H_AllHits_ThetaDiff", thetaDiff);
+      stats.fillHistogram("CF2G4H_AllHits_DeltaLOR",deltaLor);
+      stats.fillHistogram("CF2G4H_AllHits_Zpos",firstHit.getPosZ());
+      stats.fillHistogram("CF2G4H_AllHits_Zpos",secondHit.getPosZ());
+      stats.fillHistogram("CF2G4H_AllHits_Dist",distance);
+      stats.fillHistogram("CF2G4H_AllHits_XYpos",firstHit.getPosX(),firstHit.getPosY());
+      stats.fillHistogram("CF2G4H_AllHits_XYpos",secondHit.getPosX(),secondHit.getPosY());
+      stats.fillHistogram("CF2G4H_AllHits_TOT",ns(tot_1));
+      stats.fillHistogram("CF2G4H_AllHits_TOT",ns(tot_2));
+      
+      passed = fabs(thetaDiff - 180.0) < b2bSlotThetaDiff;
+      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,0);
+      if (!passed) {continue;}
+      
+      passed = timeDiff < b2bTimeDiff;
+      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,1);
+      if (!passed) {continue;}
+      
+      passed = isInTOTRange(tot_1,annihTOTMin,annihTOTMax) && isInTOTRange(tot_2,annihTOTMin,annihTOTMax);
+      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,2);
+      if (!passed) {continue;}
+      
+      //Check annihilation point
+      TVector3 apos = calculateAnnihilationPoint(firstHit,secondHit); //annihilation point
+      double arxy = apos.x()*apos.x() + apos.y()*apos.y(); //annhilation point projection on xy plane
+      //Fill histograms
+      stats.fillHistogram("CF2G4H_PreAnnHits_TimeDiff", timeDiff);
+      stats.fillHistogram("CF2G4H_PreAnnHits_ThetaDiff", thetaDiff);
+      stats.fillHistogram("CF2G4H_PreAnnHits_DeltaLOR",deltaLor);
+      stats.fillHistogram("CF2G4H_PreAnnHits_Zpos",firstHit.getPosZ());
+      stats.fillHistogram("CF2G4H_PreAnnHits_Zpos",secondHit.getPosZ());
+      stats.fillHistogram("CF2G4H_PreAnnHits_Dist",distance);
+      stats.fillHistogram("CF2G4H_PreAnnHits_XYpos",firstHit.getPosX(),firstHit.getPosY());
+      stats.fillHistogram("CF2G4H_PreAnnHits_XYpos",secondHit.getPosX(),secondHit.getPosY());
+      stats.fillHistogram("CF2G4H_PreAnnHits_FoundIndexes",static_cast<double>(potential_ann_gamma_1_index),static_cast<double>(potential_ann_gamma_2_index));
+      stats.fillHistogram("CF2G4H_PreAnnHits_AnnHitPosXY",apos.x(),apos.y());
+      stats.fillHistogram("CF2G4H_PreAnnHits_AnnHitPosZ",apos.z());
+      stats.fillHistogram("CF2G4H_PreAnnHits_TOT",ns(tot_1));
+      stats.fillHistogram("CF2G4H_PreAnnHits_TOT",ns(tot_2));
+      
+      ////Annihilation point in a circle with radius 1 cm on a plane XY and its annhilation point z-position is |z|<4 cm 
+      passed = arxy < 1.0;
+      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,3);
+      if (!passed) {continue;}
+      passed = fabs(apos.z()) < 4.0;
+      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,4);
+      if (!passed) {continue;}
+      
+      fhe.fAnniGamma1Index = potential_ann_gamma_1_index;
+      fhe.fAnniGamma2Index = potential_ann_gamma_2_index;
+      //Fill histograms
+      stats.fillHistogram("CF2G4H_AnnHits_TimeDiff", timeDiff);
+      stats.fillHistogram("CF2G4H_AnnHits_ThetaDiff", thetaDiff);
+      stats.fillHistogram("CF2G4H_AnnHits_DeltaLOR",deltaLor);
+      stats.fillHistogram("CF2G4H_AnnHits_Zpos",firstHit.getPosZ());
+      stats.fillHistogram("CF2G4H_AnnHits_Zpos",secondHit.getPosZ());
+      stats.fillHistogram("CF2G4H_AnnHits_Dist",distance);
+      stats.fillHistogram("CF2G4H_AnnHits_XYpos",firstHit.getPosX(),firstHit.getPosY());
+      stats.fillHistogram("CF2G4H_AnnHits_XYpos",secondHit.getPosX(),secondHit.getPosY());
+      stats.fillHistogram("CF2G4H_AnnHits_FoundIndexes",static_cast<double>(potential_ann_gamma_1_index),static_cast<double>(potential_ann_gamma_2_index));
+      stats.fillHistogram("CF2G4H_AnnHits_AnnHitPosXY",apos.x(),apos.y());
+      stats.fillHistogram("CF2G4H_AnnHits_AnnHitPosZ",apos.z());
+      stats.fillHistogram("CF2G4H_AnnHits_TOT",ns(tot_1));
+      stats.fillHistogram("CF2G4H_AnnHits_TOT",ns(tot_2));
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+** Tries to find scattered hit for each annihilation gamma.
+** If found it fill informations about scattered gammas indexes, scattering angles (theta) and delta phi.
+** Conditions:
+** 1. Found hit is not prompt gamma hit (not implemented yet)
+** 2. Each scattering hit is inside different ellipse.
+**/
+bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
+  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd
+)
+{
+  //ahit - annihilation gamma hit
+  JPetHit ahit_1 = hits.at(fhe.fAnniGamma1Index);
+  JPetHit ahit_2 = hits.at(fhe.fAnniGamma2Index);
+  //Potential scattering hits data (shit - scattered gamma hit)
+  uint shit_1_index = 0;
+  uint shit_2_index = 0;
+  
+  
+  for (uint i = 0; i < hits.size(); i++) {
+    //Skip annihilation gammas indexes
+    if ( i == fhe.fAnniGamma1Index || i == fhe.fAnniGamma2Index ) {continue;}
+    //Calculate delta1i and delta2i
+    JPetHit hit_i = hits.at(i);
+    double delta1i = caclulateDelta(ahit_1,hit_i);//[ns]
+    double delta2i = caclulateDelta(ahit_2,hit_i);//[ns]
+    if (dvd.IsInRight(delta1i,delta2i)) {shit_1_index = i;}
+    else if (dvd.IsInLeft(delta1i,delta2i)) {shit_2_index = i;}
+    
+    //Fill histograms
+    stats.fillHistogram("CF2G4H2SH_AllHits_DVD",delta1i,delta2i);
+    
+    if (shit_1_index == 0 || shit_2_index == 0) {continue;}
+    
+    JPetHit shit_1 = hits.at(shit_1_index);
+    JPetHit shit_2 = hits.at(shit_2_index);
+    fhe.fScatGamma1Index = shit_1_index;
+    fhe.fScatGamma2Index = shit_2_index;
+    fhe.fTheta1 = calculateScatteringAngle(ahit_1, shit_1);
+    fhe.fTheta2 = calculateScatteringAngle(ahit_2, shit_2);
+    fhe.fDeltaPhi = calculateDeltaPhi(ahit_1,ahit_2,shit_1,shit_2);
+    //Fill histograms
+    stats.fillHistogram("CF2G4H2SH_ScaHits_FoundIndexes",static_cast<double>(fhe.fScatGamma1Index),static_cast<double>(fhe.fScatGamma2Index));
+    stats.fillHistogram("CF2G4H2SH_Theta1_vs_Theta2",fhe.fTheta1,fhe.fTheta2);
+    stats.fillHistogram("CF2G4H2SH_Theta1",fhe.fTheta1);
+    stats.fillHistogram("CF2G4H2SH_Theta2",fhe.fTheta2);
+    stats.fillHistogram("CF2G4H2SH_DeltaPhi",fhe.fDeltaPhi);
+    double delta11 = caclulateDelta(ahit_1,shit_1);//[ns]
+    double delta21 = caclulateDelta(ahit_2,shit_1);//[ns]
+    double delta12 = caclulateDelta(ahit_1,shit_2);//[ns]
+    double delta22 = caclulateDelta(ahit_2,shit_2);//[ns]
+    stats.fillHistogram("CF2G4H2SH_ScaHits_DVD",delta11,delta21);
+    stats.fillHistogram("CF2G4H2SH_ScaHits_DVD",delta12,delta22);
+    return true;
+  }
+  return false;  
+}
+
+bool EventCategorizerTools::checkFor2Gamma4HitsCircleCut(
+  JPetStatistics& stats, const FourHitsEvent& fhe, const double& theta_radius
+)
+{
+  if (IsInsideCircle(fhe.fTheta1,fhe.fTheta2,theta_radius))
+  {
+    std::string str_radius = std::to_string(static_cast<int>(theta_radius));
+    std::string hname = "CF2G4HCC_DeltaPhi_Radius_"+str_radius;
+    stats.fillHistogram(hname.c_str(),fhe.fDeltaPhi);
+    hname = "CF2G4HCC_Theta1_vs_Theta2_Radius_"+str_radius;
+    stats.fillHistogram(hname.c_str(),fhe.fTheta1,fhe.fTheta2);
+    return true;
+  }
+  return false;
+}
+
+double EventCategorizerTools::calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2)
+{
+  TVector3 apos = calculateAnnihilationPoint(ahit_1,ahit_2); //annihilation point
+  TVector3 amom_1 = (ahit_1.getPos()-apos).Unit(); //annihilation gamma momentum direction
+  TVector3 amom_2 = (ahit_2.getPos()-apos).Unit(); //annihilation gamma momentum direction
+  TVector3 smom_1 = (shit_1.getPos()-ahit_1.getPos()).Unit(); //scattered gamma momentum direction
+  TVector3 smom_2 = (shit_2.getPos()-ahit_2.getPos()).Unit(); //scattered gamma momentum direction
+  TVector3 plane_nv_1 = amom_1.Cross(smom_1).Unit(); //scattering plane normal vector
+  TVector3 plane_nv_2 = amom_2.Cross(smom_2).Unit(); //scattering plane normal vector
+  return plane_nv_1.Angle(plane_nv_2) * TMath::RadToDeg();
+}
+
+double EventCategorizerTools::caclulateDelta(const JPetHit& ahit,const JPetHit& hit)
+{
+  return ns(fabs(calculateTOF(ahit,hit)) - calculateScatteringTime(ahit,hit));
+}
+
+double EventCategorizerTools::ns(double ps) { return ps/1000.0;}
+
+bool EventCategorizerTools::IsInsideCircle(const double& theta1, const double& theta2, const double& theta_radius)
+{
+  double delta1 = theta1-81.6;
+  double delta2 = theta2-81.6;
+  return delta1*delta1 + delta2*delta2 <= theta_radius*theta_radius;
+}
+
+bool EventCategorizerTools::isNotPromptHit(JPetStatistics& stats,const JPetHit& hit,const double& deexTOTCutMin,const std::string& fTOTCalculationType)
+{
+  double tot = HitFinderTools::calculateTOT(hit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
+  stats.fillHistogram("GHF4HA_TOT",ns(tot));
+  return tot < deexTOTCutMin;
+}
+
+bool EventCategorizerTools::isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max)
+{
+  return tot_cut_min < tot && tot < tot_cut_max;
+}
+
+

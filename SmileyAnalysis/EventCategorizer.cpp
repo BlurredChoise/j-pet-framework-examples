@@ -78,6 +78,71 @@ bool EventCategorizer::init()
   } else {
     WARNING("No TOT calculation option given by the user. Using standard sum.");
   }
+  
+  //Parameters for DeltaVsDelta filter
+  ////Left ellipse
+  if (isOptionSet(fParams.getOptions(), kEllipseLeftX0)) {
+    fEllipseLeftX0 = getOptionAsFloat(fParams.getOptions(), kEllipseLeftX0);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseLeftX0.c_str(), fEllipseLeftX0));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseLeftY0)) {
+    fEllipseLeftY0 = getOptionAsFloat(fParams.getOptions(), kEllipseLeftY0);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseLeftY0.c_str(), fEllipseLeftY0));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseLeftRX)) {
+    fEllipseLeftRX = getOptionAsFloat(fParams.getOptions(), kEllipseLeftRX);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseLeftRX.c_str(), fEllipseLeftRX));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseLeftRY)) {
+    fEllipseLeftRY = getOptionAsFloat(fParams.getOptions(), kEllipseLeftRY);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseLeftRY.c_str(), fEllipseLeftRY));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseLeftRotAngle)) {
+    fEllipseLeftRotAngle = getOptionAsFloat(fParams.getOptions(), kEllipseLeftRotAngle);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseLeftRotAngle.c_str(), fEllipseLeftRotAngle));
+  }
+  ////Right ellipse
+  if (isOptionSet(fParams.getOptions(), kEllipseRightX0)) {
+    fEllipseRightX0 = getOptionAsFloat(fParams.getOptions(), kEllipseRightX0);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseRightX0.c_str(), fEllipseRightX0));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseRightY0)) {
+    fEllipseRightY0 = getOptionAsFloat(fParams.getOptions(), kEllipseRightY0);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseRightY0.c_str(), fEllipseRightY0));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseRightRX)) {
+    fEllipseRightRX = getOptionAsFloat(fParams.getOptions(), kEllipseRightRX);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseRightRX.c_str(), fEllipseRightRX));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseRightRY)) {
+    fEllipseRightRY = getOptionAsFloat(fParams.getOptions(), kEllipseRightRY);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseRightRY.c_str(), fEllipseRightRY));
+  }
+  if (isOptionSet(fParams.getOptions(), kEllipseRightRotAngle)) {
+    fEllipseRightRotAngle = getOptionAsFloat(fParams.getOptions(), kEllipseRightRotAngle);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kEllipseRightRotAngle.c_str(), fEllipseRightRotAngle));
+  }
+  
+  if (isOptionSet(fParams.getOptions(), kAnnihTOTCutMin)) {
+    fAnnihTOTCutMin = getOptionAsFloat(fParams.getOptions(), kAnnihTOTCutMin);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihTOTCutMin.c_str(), fAnnihTOTCutMin));
+  }
+  if (isOptionSet(fParams.getOptions(), kAnnihTOTCutMax)) {
+    fAnnihTOTCutMax = getOptionAsFloat(fParams.getOptions(), kAnnihTOTCutMax);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihTOTCutMax.c_str(), fAnnihTOTCutMax));
+  }
 
 
   // Input events type
@@ -89,39 +154,30 @@ bool EventCategorizer::init()
 
 bool EventCategorizer::exec()
 {
+  DVDFilter dvd;
+  dvd.fRightEllipse.setParamaters(fEllipseRightX0,fEllipseRightY0,fEllipseRightRX,fEllipseRightRY,fEllipseRightRotAngle);
+  dvd.fLeftEllipse.setParamaters(fEllipseLeftX0,fEllipseLeftY0,fEllipseLeftRX,fEllipseLeftRY,fEllipseLeftRotAngle);
   if (auto timeWindow = dynamic_cast<const JPetTimeWindow* const>(fEvent)) {
     vector<JPetEvent> events;
     for (uint i = 0; i < timeWindow->getNumberOfEvents(); i++) {
       const auto& event = dynamic_cast<const JPetEvent&>(timeWindow->operator[](i));
-
-      // Check types of current event
-      bool is2Gamma = EventCategorizerTools::checkFor2Gamma(
-        event, getStatistics(), fSaveControlHistos, fB2BSlotThetaDiff, fMaxTimeDiff
-      );
-      bool is3Gamma = EventCategorizerTools::checkFor3Gamma(
-        event, getStatistics(), fSaveControlHistos
-      );
-      bool isPrompt = EventCategorizerTools::checkForPrompt(
-        event, getStatistics(), fSaveControlHistos, fDeexTOTCutMin, fDeexTOTCutMax, fTOTCalculationType
-      );
-      bool isScattered = EventCategorizerTools::checkForScatter(
-        event, getStatistics(), fSaveControlHistos, fScatterTOFTimeDiff, fTOTCalculationType
-      );
-
-      JPetEvent newEvent = event;
-      if(is2Gamma) newEvent.addEventType(JPetEventType::k2Gamma);
-      if(is3Gamma) newEvent.addEventType(JPetEventType::k3Gamma);
-      if(isPrompt) newEvent.addEventType(JPetEventType::kPrompt);
-      if(isScattered) newEvent.addEventType(JPetEventType::kScattered);
-
-      if(fSaveControlHistos){
-        for(auto hit : event.getHits()){
-          getStatistics().fillHistogram("All_XYpos", hit.getPosX(), hit.getPosY());
-        }
-      }
-      events.push_back(newEvent);
+      //First extract only useful hits for 2+2 analysis (not prompt and in range |z|<23 cm)
+      auto hits = EventCategorizerTools::getHitsFor4HitsAnalysis(getStatistics(),event,fDeexTOTCutMin,fTOTCalculationType);
+      FourHitsEvent fhe;
+      //Condition 1: We have at least 4 hits and we found annihilation gammas
+      bool passed = EventCategorizerTools::checkFor2Gamma4Hits(hits, getStatistics(), fhe, fB2BSlotThetaDiff, fMaxTimeDiff,fAnnihTOTCutMin,fAnnihTOTCutMax,fTOTCalculationType);
+      if (!passed) {passedUpTo(0);continue;}
+      //Condition 2: We have found scattering hits for each annihilation gamma
+      passed = EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd);
+      if (!passed) {passedUpTo(1);continue;}
+      //Condition 3: Scattering angles are in a circle with radiu 30 deg around (81.6,81.6) deg
+      passed = EventCategorizerTools::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0);
+      if (!passed) {passedUpTo(2);continue;}
+      //Condition 4: Scattering angles are in a circle with radiu 10 deg around (81.6,81.6) deg
+      passed = EventCategorizerTools::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 10.0);
+      if (!passed) {passedUpTo(3);continue;}
+      passedUpTo(4);
     }
-    saveEvents(events);
   } else { return false; }
   return true;
 }
@@ -137,93 +193,194 @@ void EventCategorizer::saveEvents(const vector<JPetEvent>& events)
   for (const auto& event : events) { fOutputEvents->add<JPetEvent>(event); }
 }
 
+void EventCategorizer::passedUpTo(const uint x){
+  bool passed;
+  for(uint i = 0; i < 4; ++i)
+  {
+    passed = i < x;
+    getStatistics().getEffiHisto("effGeneralSelection")->Fill(passed,static_cast<double>(i));
+  }
+}
+
 void EventCategorizer::initialiseHistograms(){
-
-  // General histograms
-  getStatistics().createHistogramWithAxes(
-    new TH2D("All_XYpos", "Hit position XY", 240, -60.25, 59.75, 240, -60.25, 59.75),
-    "Hit X position [cm]", "Hit Y position [cm]"
+  //Efficiecny objects
+  //// preparing hits
+  getStatistics().createObject(
+    new TEfficiency("effHitsPreparation","Hits preparation;Selection;#epsilon",2,-0.5,1.5)
   );
-
-  // Histograms for 2Gamma category
-  getStatistics().createHistogramWithAxes(
-    new TH1D("2Gamma_Zpos", "Z-axis position of 2 gamma hits", 201, -50.25, 50.25),
-    "Z axis position [cm]", "Number of Hits"
+  getStatistics().createObject(
+    new TEfficiency("effGeneralSelection","General program selection workflow;Selection;#epsilon",4,-0.5,3.5)
   );
-
-  getStatistics().createHistogramWithAxes(
-    new TH1D("2Gamma_DLOR", "Delta LOR distance", 100, -0.25, 49.25),
-    "Delta LOR [cm]", "Counts"
+  getStatistics().createObject(
+    new TEfficiency("effAnnHitsFinding","Finding annhilation hits;Selection;#epsilon",5,-0.5,4.5)
   );
-
+  //GHF4HA - getHitsFor4HitsAnalysis
   getStatistics().createHistogramWithAxes(
-    new TH1D("2Gamma_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
-    "Hits theta diff [deg]", "Counts"
+    new TH1D("GHF4HA_TOT", "TOT", 600, 0.0, 60),
+    "TOT [ps]", "Counts"
   );
-
   getStatistics().createHistogramWithAxes(
-    new TH1D("2Gamma_TimeDiff", "Time difference of 2 gamma hits", 200, -10100.0, 99900.0),
+    new TH1D("GHF4HA_Zpos", "Zpos", 500, -50.0, 50.0),
+    "Z axis position [cm]", "Counts"
+  );
+  //CF2G4H - histograms filled in EventCategorizerTools::checkFor2Gamma4Hits
+  //// All hits
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AllHits_TimeDiff", "Time difference of 2 gamma hits", 200, 0.0, 99900.0),
     "Time Difference [ps]", "Number of Hit Pairs"
   );
-
   getStatistics().createHistogramWithAxes(
-    new TH1D("2Gamma_Dist", "B2B hits distance", 150, -0.5, 149.5),
-    "Distance [cm]", "Number of Hit Pairs"
+    new TH1D("CF2G4H_AllHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    "Hits theta diff [deg]", "Counts"
   );
-
   getStatistics().createHistogramWithAxes(
-    new TH1D("Annih_TOF", "Annihilation pairs Time of Flight", 201, -3015.0, 3015.0),
-    "Time of Flight [ps]", "Number of Annihilation Pairs"
-  );
-
-  getStatistics().createHistogramWithAxes(
-    new TH2D("AnnihPoint_XY", "XY position of annihilation point", 240, -60.25, 59.75, 240, -60.25, 59.75),
-    "X position [cm]", "Y position [cm]"
-  );
-
-  getStatistics().createHistogramWithAxes(
-    new TH2D("AnnihPoint_ZX", "ZX position of annihilation point", 240, -60.25, 59.75, 240, -60.25, 59.75),
-    "Z position [cm]", "X position [cm]"
-  );
-
-  getStatistics().createHistogramWithAxes(
-    new TH2D("AnnihPoint_ZY", "ZY position of annihilation point", 240, -60.25, 59.75, 240, -60.25, 59.75),
-    "Z position [cm]", "Y position [cm]"
-  );
-
-  getStatistics().createHistogramWithAxes(
-    new TH1D("Annih_DLOR", "Delta LOR distance of annihilation photons", 100, -0.25, 49.25),
+    new TH1D("CF2G4H_AllHits_DeltaLOR", "Delta LOR distance", 100, -0.25, 49.25),
     "Delta LOR [cm]", "Counts"
   );
-
-  // Histograms for 3Gamama category
   getStatistics().createHistogramWithAxes(
-    new TH2D("3Gamma_Angles", "Relative angles - transformed", 250, -0.5, 249.5, 20, -0.5, 199.5),
-    "Relative angle 1-2", "Relative angle 2-3"
+    new TH1D("CF2G4H_AllHits_Zpos", "Z-axis position of 2 gamma hits", 201, -50.25, 50.25),
+    "Z axis position [cm]", "Number of Hits"
   );
-
-  // Histograms for scattering category
   getStatistics().createHistogramWithAxes(
-    new TH1D("ScatterTOF_TimeDiff", "Difference of Scatter TOF and hits time difference",
-    3.0*fScatterTOFTimeDiff, -0.5, 3.0*fScatterTOFTimeDiff-0.5),
-    "Scat_TOF - time diff [ps]", "Number of Hit Pairs"
+    new TH1D("CF2G4H_AllHits_Dist", "B2B hits distance", 150, -0.5, 149.5),
+    "Distance [cm]", "Number of Hit Pairs"
   );
-
   getStatistics().createHistogramWithAxes(
-    new TH2D("ScatterAngle_PrimaryTOT", "Angle of scattering vs. TOT of primary hits",
-    200, -0.5, 199.5, 200, -100.0, 39900.0),
-    "Scattering Angle", "TOT of primary hit [ps]"
+    new TH2D("CF2G4H_AllHits_XYpos", "Hit position XY", 240, -60.25, 59.75, 240, -60.25, 59.75),
+    "Hit X position [cm]", "Hit Y position [cm]"
   );
-
   getStatistics().createHistogramWithAxes(
-    new TH2D("ScatterAngle_ScatterTOT", "Angle of scattering vs. TOT of scattered hits",
-    200, -0.5, 199.5, 200, -100.0, 39900.0),
-    "Scattering Angle", "TOT of scattered hit [ps]"
+    new TH1D("CF2G4H_AllHits_TOT", "TOT", 600, 0.0, 60),
+    "TOT [ns]", "Counts"
   );
-
-  // Histograms for deexcitation
+  ////Preannihilation hits - good candidates but have to meet annhilation point cut conditions
   getStatistics().createHistogramWithAxes(
-    new TH1D("Deex_TOT_cut", "TOT of all hits with deex cut (30,50) ns", 200, 24950.0, 54950.0),
-    "TOT [ps]", "Number of Hits"
+    new TH1D("CF2G4H_PreAnnHits_TimeDiff", "Time difference of 2 gamma hits", 200, 0.0, fMaxTimeDiff),
+    "Time Difference [ps]", "Number of Hit Pairs"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    "Hits theta diff [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_DeltaLOR", "Delta LOR distance", 100, -0.25, 49.25),
+    "Delta LOR [cm]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_Zpos", "Z-axis position of 2 gamma hits", 201, -50.25, 50.25),
+    "Z axis position [cm]", "Number of Hits"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_Dist", "B2B hits distance", 150, -0.5, 149.5),
+    "Distance [cm]", "Number of Hit Pairs"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_PreAnnHits_XYpos", "Hit position XY", 240, -60.25, 59.75, 240, -60.25, 59.75),
+    "Hit X position [cm]", "Hit Y position [cm]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_PreAnnHits_FoundIndexes", "Found indexes for annhilation gammas", 9,-0.5,9.5,9,-0.5,9.5),
+    "First a-gamma index", "Second a-gamma index"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_PreAnnHits_AnnHitPosXY", "Reconstructed XY position of annihilation point", 1200,-60.0,60.0,1200,-60.0,60.0),
+    "Annhilation point X [cm]", "Annhilation point Y [cm]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_AnnHitPosZ", "Annhilation point Z position", 200, -10.0, 10.0),
+    "Annihilation point Z position [cm]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_PreAnnHits_TOT", "TOT", 600, 0.0, 60),
+    "TOT [ns]", "Counts"
+  );
+  ////Annihilation gammas hits
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_TimeDiff", "Time difference of 2 gamma hits", 200, 0.0, fMaxTimeDiff),
+    "Time Difference [ps]", "Number of Hit Pairs"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    "Hits theta diff [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_DeltaLOR", "Delta LOR distance", 100, -0.25, 49.25),
+    "Delta LOR [cm]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_Zpos", "Z-axis position of 2 gamma hits", 201, -50.25, 50.25),
+    "Z axis position [cm]", "Number of Hits"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_Dist", "B2B hits distance", 150, -0.5, 149.5),
+    "Distance [cm]", "Number of Hit Pairs"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_AnnHits_XYpos", "Hit position XY", 240, -60.25, 59.75, 240, -60.25, 59.75),
+    "Hit X position [cm]", "Hit Y position [cm]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_AnnHits_FoundIndexes", "Found indexes for annhilation gammas", 9,-0.5,9.5,9,-0.5,9.5),
+    "First a-gamma index", "Second a-gamma index"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H_AnnHits_AnnHitPosXY", "Reconstructed XY position of annihilation point", 100,-5.0,5.0,100,-5.0,5.0),
+    "Annhilation point X [cm]", "Annhilation point Y [cm]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_AnnHitPosZ", "Annhilation point Z position", 200, -10.0, 10.0),
+    "Annihilation point Z position [cm]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H_AnnHits_TOT", "TOT", 600, 0.0, 60),
+    "TOT [ns]", "Counts"
+  );
+  //CF2G4H2SH - histograms filled in EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits
+  //// All hits
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H2SH_AllHits_DVD", "D1i vs D2i", 240, -6.0, 6.0, 240, -6.0, 6.0),
+    "\\Delta_{1i} [ns]", "\\Delta_{2i} [ns]"
+  );
+  //// Selected hits - we found 2+2 hits
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H2SH_ScaHits_FoundIndexes", "Found indexes for scattered gammas", 9,-0.5,9.5,9,-0.5,9.5),
+    "First s-gamma index", "Second s-gamma index"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H2SH_Theta1_vs_Theta2", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_DeltaPhi", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4H2SH_ScaHits_DVD", "D1i vs D2i", 240, -6.0, 6.0, 240, -6.0, 6.0),
+    "\\Delta_{1i} [ns]", "\\Delta_{2i} [ns]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_Theta1", "1st gamma scattering angle", 181, -0.5, 180.5),
+    "\\Theta_{1} [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_Theta2", "2nd gamma scattering angle", 181, -0.5, 180.5),
+    "\\Theta_{} [deg]", "Counts"
+  );
+  //CF2G4HCC - checkFor2Gamma4HitsCircleCut
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_30", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_10", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_30", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_10", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
   );
 }
