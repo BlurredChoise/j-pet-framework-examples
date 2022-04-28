@@ -1,0 +1,30 @@
+#!/bin/sh
+
+#PBS -q i12h
+#PBS -l nodes=1:ppn=1
+#PBS -N qda
+#PBS -V # All env. variables are passed into the cluster
+
+#Performs analysis of jpet measurement data for 2+2 events analysis
+#Make sure you exported a variable SMILEYANA_EXE which is a path to the SmileyAnalysis.x
+
+cd ${PBS_O_WORKDIR}
+FILES_LIST_TXT=set_${PBS_ARRAYID}.txt
+if [ ! -f ${FILES_LIST_TXT} ]; then
+  echo "Set file does not exist. File name:${FILES_LIST_TXT}"
+  exit 1;
+fi
+
+SECONDS=0
+while IFS= read -r ifile_path
+do
+  echo "[${SECONDS}][INFO] Checking input file ..."
+  if [ ! -f ${ifile_path} ]; then
+    echo "[${SECONDS}][WARNING] Input file does not exist: ${ifile_path}"
+  else
+    echo "[${SECONDS}][INFO] Start analysis of file: ${ifile_path}"
+    ${SMILEYANA_EXE} -t root -f ${ifile_path} -p ${PBS_O_WORKDIR}/conf_trb3.xml -o ${PBS_O_WORKDIR} -u ${PBS_O_WORKDIR}/userParams.json -i 9 -l ${PBS_O_WORKDIR}/detectorSetupRun9.json
+    echo "[${SECONDS}][INFO] Finished analysis of file: ${ifile_path}"
+  fi
+done < "${FILES_LIST_TXT}"
+echo "[${SECONDS}] Finished subjob no. ${PBS_ARRAYID}"
