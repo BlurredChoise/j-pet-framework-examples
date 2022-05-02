@@ -21,6 +21,7 @@
 
 using namespace jpet_options_tools;
 using namespace std;
+typedef EventCategorizerTools ECT;
 
 EventCategorizer::EventCategorizer(const char* name): JPetUserTask(name) {}
 
@@ -143,7 +144,28 @@ bool EventCategorizer::init()
   } else {
     WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihTOTCutMax.c_str(), fAnnihTOTCutMax));
   }
+  if (isOptionSet(fParams.getOptions(), kAnnihRadiusXY)) {
+    fAnnihRadiusXY = getOptionAsFloat(fParams.getOptions(), kAnnihRadiusXY);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihRadiusXY.c_str(), fAnnihRadiusXY));
+  }
+  if (isOptionSet(fParams.getOptions(), kAnnihZPosDelta)) {
+    fAnnihZPosDelta = getOptionAsFloat(fParams.getOptions(), kAnnihZPosDelta);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihZPosDelta.c_str(), fAnnihZPosDelta));
+  }
 
+  //Analysis params
+  fAParams.fScatterTOFTimeDiff = fScatterTOFTimeDiff;
+	fAParams.fB2BSlotThetaDiff = fB2BSlotThetaDiff;
+	fAParams.fDeexTOTCutMin = fDeexTOTCutMin;//[ps]
+	fAParams.fDeexTOTCutMax = fDeexTOTCutMax;//[ps]
+	fAParams.fMaxTimeDiff = fMaxTimeDiff;//[ps]
+  fAParams.fAnnihTOTCutMin = fAnnihTOTCutMin;//[ps]
+  fAParams.fAnnihTOTCutMax = fAnnihTOTCutMax;//[ps]
+  fAParams.fAnnihRadiusXY = fAnnihRadiusXY;//[cm]
+  fAParams.fAnnihZPosDelta = fAnnihZPosDelta;//[cm]
+  fAParams.fTOTCalculationType = fTOTCalculationType;
 
   // Input events type
   fOutputEvents = new JPetTimeWindow("JPetEvent");
@@ -162,21 +184,16 @@ bool EventCategorizer::exec()
     for (uint i = 0; i < timeWindow->getNumberOfEvents(); i++) {
       const auto& event = dynamic_cast<const JPetEvent&>(timeWindow->operator[](i));
       //First extract only useful hits for 2+2 analysis (not prompt and in range |z|<23 cm)
-      auto hits = EventCategorizerTools::getHitsFor4HitsAnalysis(getStatistics(),event,fDeexTOTCutMin,fTOTCalculationType);
+      auto hits = ECT::getHitsFor4HitsAnalysis(getStatistics(),event,fAParams);
       FourHitsEvent fhe;
       //Condition 1: We have at least 4 hits and we found annihilation gammas
-      bool passed = EventCategorizerTools::checkFor2Gamma4Hits(hits, getStatistics(), fhe, fB2BSlotThetaDiff, fMaxTimeDiff,fAnnihTOTCutMin,fAnnihTOTCutMax,fTOTCalculationType);
-      if (!passed) {passedUpTo(0);continue;}
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",0,ECT::checkFor2Gamma4Hits(hits, getStatistics(), fhe,fAParams))) {continue;}
       //Condition 2: We have found scattering hits for each annihilation gamma
-      passed = EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd);
-      if (!passed) {passedUpTo(1);continue;}
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",1,ECT::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd))) {continue;}
       //Condition 3: Scattering angles are in a circle with radiu 30 deg around (81.6,81.6) deg
-      passed = EventCategorizerTools::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0);
-      if (!passed) {passedUpTo(2);continue;}
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",2,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0))) {continue;}
       //Condition 4: Scattering angles are in a circle with radiu 10 deg around (81.6,81.6) deg
-      passed = EventCategorizerTools::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 10.0);
-      if (!passed) {passedUpTo(3);continue;}
-      passedUpTo(4);
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",3,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 10.0))) {continue;}
     }
   } else { return false; }
   return true;
@@ -193,20 +210,11 @@ void EventCategorizer::saveEvents(const vector<JPetEvent>& events)
   for (const auto& event : events) { fOutputEvents->add<JPetEvent>(event); }
 }
 
-void EventCategorizer::passedUpTo(const uint x){
-  bool passed;
-  for(uint i = 0; i < 4; ++i)
-  {
-    passed = i < x;
-    getStatistics().getEffiHisto("effGeneralSelection")->Fill(passed,static_cast<double>(i));
-  }
-}
-
 void EventCategorizer::initialiseHistograms(){
   //Efficiecny objects
   //// preparing hits
   getStatistics().createObject(
-    new TEfficiency("effHitsPreparation","Hits preparation;Selection;#epsilon",2,-0.5,1.5)
+    new TEfficiency("effHitsPreparation","Hits preparation;Selection;#epsilon",3,-0.5,2.5)
   );
   getStatistics().createObject(
     new TEfficiency("effGeneralSelection","General program selection workflow;Selection;#epsilon",4,-0.5,3.5)
@@ -216,14 +224,18 @@ void EventCategorizer::initialiseHistograms(){
   );
   //GHF4HA - getHitsFor4HitsAnalysis
   getStatistics().createHistogramWithAxes(
-    new TH1D("GHF4HA_TOT", "TOT", 600, 0.0, 60),
+    new TH1D("GHF4HA_All_TOT", "TOT", 600, 0.0, 60),
+    "TOT [ps]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("GHF4HA_Passed_TOT", "TOT", 600, 0.0, 60),
     "TOT [ps]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
     new TH1D("GHF4HA_Zpos", "Zpos", 500, -50.0, 50.0),
     "Z axis position [cm]", "Counts"
   );
-  //CF2G4H - histograms filled in EventCategorizerTools::checkFor2Gamma4Hits
+  //CF2G4H - histograms filled in ECT::checkFor2Gamma4Hits
   //// All hits
   getStatistics().createHistogramWithAxes(
     new TH1D("CF2G4H_AllHits_TimeDiff", "Time difference of 2 gamma hits", 200, 0.0, 99900.0),
@@ -335,7 +347,7 @@ void EventCategorizer::initialiseHistograms(){
     new TH1D("CF2G4H_AnnHits_TOT", "TOT", 600, 0.0, 60),
     "TOT [ns]", "Counts"
   );
-  //CF2G4H2SH - histograms filled in EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits
+  //CF2G4H2SH - histograms filled in ECT::checkFor2Gamma4Hits2ScatteringHits
   //// All hits
   getStatistics().createHistogramWithAxes(
     new TH2D("CF2G4H2SH_AllHits_DVD", "D1i vs D2i", 240, -6.0, 6.0, 240, -6.0, 6.0),

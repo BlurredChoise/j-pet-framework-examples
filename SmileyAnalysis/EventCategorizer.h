@@ -51,14 +51,26 @@ protected:
   const std::string kTOTCalculationType = "HitFinder_TOTCalculationType_std::string";
   const std::string kAnnihTOTCutMin = "EventCategorizer_AnnihTOTCutMin_float";
   const std::string kAnnihTOTCutMax = "EventCategorizer_AnnihTOTCutMax_float";
+  const std::string kAnnihRadiusXY = "EventCategorizer_AnnihRadiusXY_float";
+  const std::string kAnnihZPosDelta = "EventCategorizer_AnnihZPosDelta_float";
 	void saveEvents(const std::vector<JPetEvent>& event);
-	double fScatterTOFTimeDiff = 2000.0;
-	double fB2BSlotThetaDiff = 3.0;
-	double fDeexTOTCutMin = 30000.0;
-	double fDeexTOTCutMax = 50000.0;
-	double fMaxTimeDiff = 1000.;
+	double fScatterTOFTimeDiff = 2000.0;//[ps]
+	double fB2BSlotThetaDiff = 3.0;//[deg]
+  /**
+  ** ATTENTION: for each run (i.e. run 11) you have to plot TOT histogram and find values for TOT cuts
+  ** Variables which require fitting: 
+  ** - fDeexTOTCutMin
+  ** - fDeexTOTCutMax
+  ** - fAnnihTOTCutMin
+  ** - fAnnihTOTCutMax
+  **/
+	double fDeexTOTCutMin = 30000.0;//[ps]
+	double fDeexTOTCutMax = 50000.0;//[ps]
+	double fMaxTimeDiff = 1000.;//[ps]
   double fAnnihTOTCutMin = 500.0;//[ps]
   double fAnnihTOTCutMax = 19000.0;//[ps]
+  double fAnnihRadiusXY = 1.0;//[cm]
+  double fAnnihZPosDelta = 4.0;//[cm]
 	bool fSaveControlHistos = true;
   std::string fTOTCalculationType = "";
 	void initialiseHistograms();
@@ -85,7 +97,7 @@ protected:
   double fEllipseRightRX = 1.7; //ns
   double fEllipseRightRY = 0.7; //ns
   double fEllipseRightRotAngle = 60; //deg
-  void passedUpTo(const uint x);
+  AnalysisParams fAParams;
   
 };
 #endif /* !EVENTCATEGORIZER_H */

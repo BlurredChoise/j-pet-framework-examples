@@ -275,15 +275,10 @@ double EventCategorizerTools::calculatePlaneCenterDistance(
   }
 }
 
-/**
-** Check if hit is in active range of scintillator - this means hit is not in range covered by detectors (last 2cm of both sides)
-** |--|---------------------|--|
-**  where |--| is a part of scintillator covered by detector
-**/
-bool EventCategorizerTools::isInActiveScintillatorRange(JPetStatistics& stats,const JPetHit& hit)
+bool EventCategorizerTools::notPassed(JPetStatistics& stats,const std::string& eff_obj_name,const uint& selection_id,bool condition)
 {
-  stats.fillHistogram("GHF4HA_Zpos",hit.getPosZ());
-  return fabs(hit.getPosZ()) < 23.0;
+  stats.getEffiHisto(eff_obj_name.c_str())->Fill(condition,selection_id);
+  return !condition;
 }
 
 /**
@@ -291,19 +286,20 @@ bool EventCategorizerTools::isInActiveScintillatorRange(JPetStatistics& stats,co
 ** Conditions:
 ** 1. Is not prompt gamma hit
 ** 2. Z position of hit is in range |z| < 23 cm
+** 3. In not noise hit (i.e. very low value of TOT)
 **/
-std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event,const double& deexTOTCutMin,const std::string& fTOTCalculationType)
+std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event, const AnalysisParams& ap)
 {
   std::vector<JPetHit> hits;
   for (uint i = 0; i < event.getHits().size(); i++)
   {
     JPetHit hit = event.getHits().at(i);
-    bool passed = isNotPromptHit(stats,hit,deexTOTCutMin,fTOTCalculationType);
-    stats.getEffiHisto("effHitsPreparation")->Fill(passed,0);
-    if (!passed) {continue;} //it is a prompt gamma's hit - skip this hit
-    passed = isInActiveScintillatorRange(stats,hit);
-    stats.getEffiHisto("effHitsPreparation")->Fill(passed,1);
-    if (!passed) {continue;} //it is a hit inside a part of scintillator covered by a detector
+    double tot = HitFinderTools::calculateTOT(hit,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
+    stats.fillHistogram("GHF4HA_All_TOT",ns(tot));
+    if (notPassed(stats,"effHitsPreparation",0,tot < ap.fDeexTOTCutMin)) {continue;} //it is a prompt gamma's hit - skip this hit
+    if (notPassed(stats,"effHitsPreparation",1,tot > ap.fAnnihTOTCutMin)) {continue;} //it is a noise's hit - skip this hit
+    if (notPassed(stats,"effHitsPreparation",2,fabs(hit.getPosZ()) < 23.0)) {continue;} //it is a hit inside a part of scintillator covered by a detector
+    stats.fillHistogram("GHF4HA_Passed_TOT",ns(tot));
     hits.push_back(event.getHits().at(i));//save this hit - it can be the annihilator or scattered gamma hit
   }
   return hits;
@@ -320,7 +316,7 @@ std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatisti
 ** 2.2 time difference between 2 hits is lower then given by user.
 **/
 bool EventCategorizerTools::checkFor2Gamma4Hits(
-  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const double& b2bSlotThetaDiff, const double& b2bTimeDiff, const double& annihTOTMin, const double& annihTOTMax,const std::string& fTOTCalculationType)
+  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap)
 {
   if (hits.size() < 4) {
     return false;
@@ -353,8 +349,8 @@ bool EventCategorizerTools::checkFor2Gamma4Hits(
       double theta2 = max(firstHit.getBarrelSlot().getTheta(), secondHit.getBarrelSlot().getTheta());
       double thetaDiff = min(theta2 - theta1, 360.0 - theta2 + theta1);
       double distance =  calculateDistance(firstHit, secondHit);
-      double tot_1 = HitFinderTools::calculateTOT(firstHit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
-      double tot_2 = HitFinderTools::calculateTOT(secondHit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
+      double tot_1 = HitFinderTools::calculateTOT(firstHit,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
+      double tot_2 = HitFinderTools::calculateTOT(secondHit,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
       //Fill histograms
       stats.fillHistogram("CF2G4H_AllHits_TimeDiff", timeDiff);
       stats.fillHistogram("CF2G4H_AllHits_ThetaDiff", thetaDiff);
@@ -367,17 +363,9 @@ bool EventCategorizerTools::checkFor2Gamma4Hits(
       stats.fillHistogram("CF2G4H_AllHits_TOT",ns(tot_1));
       stats.fillHistogram("CF2G4H_AllHits_TOT",ns(tot_2));
       
-      passed = fabs(thetaDiff - 180.0) < b2bSlotThetaDiff;
-      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,0);
-      if (!passed) {continue;}
-      
-      passed = timeDiff < b2bTimeDiff;
-      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,1);
-      if (!passed) {continue;}
-      
-      passed = isInTOTRange(tot_1,annihTOTMin,annihTOTMax) && isInTOTRange(tot_2,annihTOTMin,annihTOTMax);
-      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,2);
-      if (!passed) {continue;}
+      if (notPassed(stats,"effAnnHitsFinding",0,fabs(thetaDiff - 180.0) < ap.fB2BSlotThetaDiff)) {continue;}
+      if (notPassed(stats,"effAnnHitsFinding",1,timeDiff < ap.fMaxTimeDiff)) {continue;}
+      if (notPassed(stats,"effAnnHitsFinding",2,isInTOTRange(tot_1,ap.fAnnihTOTCutMin,ap.fAnnihTOTCutMax) && isInTOTRange(tot_2,ap.fAnnihTOTCutMin,ap.fAnnihTOTCutMax))) {continue;}
       
       //Check annihilation point
       TVector3 apos = calculateAnnihilationPoint(firstHit,secondHit); //annihilation point
@@ -397,13 +385,11 @@ bool EventCategorizerTools::checkFor2Gamma4Hits(
       stats.fillHistogram("CF2G4H_PreAnnHits_TOT",ns(tot_1));
       stats.fillHistogram("CF2G4H_PreAnnHits_TOT",ns(tot_2));
       
-      ////Annihilation point in a circle with radius 1 cm on a plane XY and its annhilation point z-position is |z|<4 cm 
-      passed = arxy < 1.0;
-      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,3);
-      if (!passed) {continue;}
-      passed = fabs(apos.z()) < 4.0;
-      stats.getEffiHisto("effAnnHitsFinding")->Fill(passed,4);
-      if (!passed) {continue;}
+      //if (notPassed(stats,"effAnnHitsFinding",0,)) {continue;}
+      
+      ////Annihilation point in a circle with radius R cm on a plane XY and its annhilation point z-position is |z|<4 cm 
+      if (notPassed(stats,"effAnnHitsFinding",3,arxy < ap.fAnnihRadiusXY*ap.fAnnihRadiusXY)) {continue;}
+      if (notPassed(stats,"effAnnHitsFinding",4,fabs(apos.z()) < ap.fAnnihZPosDelta)) {continue;}
       
       fhe.fAnniGamma1Index = potential_ann_gamma_1_index;
       fhe.fAnniGamma2Index = potential_ann_gamma_2_index;
@@ -525,13 +511,6 @@ bool EventCategorizerTools::IsInsideCircle(const double& theta1, const double& t
   double delta1 = theta1-81.6;
   double delta2 = theta2-81.6;
   return delta1*delta1 + delta2*delta2 <= theta_radius*theta_radius;
-}
-
-bool EventCategorizerTools::isNotPromptHit(JPetStatistics& stats,const JPetHit& hit,const double& deexTOTCutMin,const std::string& fTOTCalculationType)
-{
-  double tot = HitFinderTools::calculateTOT(hit,HitFinderTools::getTOTCalculationType(fTOTCalculationType));
-  stats.fillHistogram("GHF4HA_TOT",ns(tot));
-  return tot < deexTOTCutMin;
 }
 
 bool EventCategorizerTools::isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max)

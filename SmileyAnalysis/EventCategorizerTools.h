@@ -58,6 +58,20 @@ struct DVDFilter
   bool IsInLeft(const double& theta1i, const double& theta2i) const;
 };
 
+struct AnalysisParams
+{
+  double fScatterTOFTimeDiff;//[ps]
+	double fB2BSlotThetaDiff;//[deg]
+	double fDeexTOTCutMin;//[ps]
+	double fDeexTOTCutMax;//[ps]
+	double fMaxTimeDiff;//[ps]
+  double fAnnihTOTCutMin;//[ps]
+  double fAnnihTOTCutMax;//[ps]
+  double fAnnihRadiusXY;//[cm]
+  double fAnnihZPosDelta;//[cm]
+  std::string fTOTCalculationType;
+};
+
 /**
  * @brief Tools for Event Categorization
  *
@@ -92,18 +106,17 @@ public:
   static double calculatePlaneCenterDistance(const JPetHit& firstHit,
       const JPetHit& secondHit, const JPetHit& thirdHit);
   //4 hits methods
-  static bool checkFor2Gamma4Hits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const double& b2bSlotThetaDiff, const double& b2bTimeDiff, const double& annihTOTMin, const double& annihTOTMax,const std::string& fTOTCalculationType);
+  static bool checkFor2Gamma4Hits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap);
   static bool checkFor2Gamma4Hits2ScatteringHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd);
   static double calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2);
   static double ns(double ps);
   static double caclulateDelta(const JPetHit& ahit,const JPetHit& hit);
   static bool IsInsideCircle(const double& theta1, const double& theta2, const double& theta_radius);
   static bool checkFor2Gamma4HitsCircleCut(JPetStatistics& stats, const FourHitsEvent& fhe, const double& theta_radius);
-  static bool isNotPromptHit(JPetStatistics& stats,const JPetHit& hit,const double& deexTOTCutMin,const std::string& fTOTCalculationType);
   
-  static std::vector<JPetHit> getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event,const double& deexTOTCutMin,const std::string& fTOTCalculationType);
-  static bool isInActiveScintillatorRange(JPetStatistics& stats,const JPetHit& hit);
+  static std::vector<JPetHit> getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event, const AnalysisParams& ap);
   static bool isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max);
+  static bool notPassed(JPetStatistics& stats,const std::string& eff_obj_name,const uint& selection_id,bool condition);
 
 };
 
