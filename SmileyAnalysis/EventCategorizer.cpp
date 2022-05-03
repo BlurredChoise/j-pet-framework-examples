@@ -154,6 +154,11 @@ bool EventCategorizer::init()
   } else {
     WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kAnnihZPosDelta.c_str(), fAnnihZPosDelta));
   }
+  if (isOptionSet(fParams.getOptions(), kNoiseTOTCut)) {
+    fNoiseTOTCut = getOptionAsFloat(fParams.getOptions(), kNoiseTOTCut);
+  } else {
+    WARNING(Form("No value of the %s parameter provided by the user. Using default value of %lf.", kNoiseTOTCut.c_str(), fNoiseTOTCut));
+  }
 
   //Analysis params
   fAParams.fScatterTOFTimeDiff = fScatterTOFTimeDiff;
@@ -166,6 +171,7 @@ bool EventCategorizer::init()
   fAParams.fAnnihRadiusXY = fAnnihRadiusXY;//[cm]
   fAParams.fAnnihZPosDelta = fAnnihZPosDelta;//[cm]
   fAParams.fTOTCalculationType = fTOTCalculationType;
+  fAParams.fNoiseTOTCut = fNoiseTOTCut;//[ps]
 
   // Input events type
   fOutputEvents = new JPetTimeWindow("JPetEvent");

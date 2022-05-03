@@ -69,6 +69,7 @@ struct AnalysisParams
   double fAnnihTOTCutMax;//[ps]
   double fAnnihRadiusXY;//[cm]
   double fAnnihZPosDelta;//[cm]
+  double fNoiseTOTCut;//[cm]
   std::string fTOTCalculationType;
 };
 

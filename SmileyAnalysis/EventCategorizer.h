@@ -53,6 +53,7 @@ protected:
   const std::string kAnnihTOTCutMax = "EventCategorizer_AnnihTOTCutMax_float";
   const std::string kAnnihRadiusXY = "EventCategorizer_AnnihRadiusXY_float";
   const std::string kAnnihZPosDelta = "EventCategorizer_AnnihZPosDelta_float";
+  const std::string kNoiseTOTCut = "EventCategorizer_NoiseTOTCut_float";
 	void saveEvents(const std::vector<JPetEvent>& event);
 	double fScatterTOFTimeDiff = 2000.0;//[ps]
 	double fB2BSlotThetaDiff = 3.0;//[deg]
@@ -71,6 +72,7 @@ protected:
   double fAnnihTOTCutMax = 19000.0;//[ps]
   double fAnnihRadiusXY = 1.0;//[cm]
   double fAnnihZPosDelta = 4.0;//[cm]
+  double fNoiseTOTCut = 500.0;//[ps]
 	bool fSaveControlHistos = true;
   std::string fTOTCalculationType = "";
 	void initialiseHistograms();
