@@ -300,6 +300,7 @@ std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatisti
     if (notPassed(stats,"effHitsPreparation",1,tot > ap.fNoiseTOTCut)) {continue;} //it is a noise's hit - skip this hit
     if (notPassed(stats,"effHitsPreparation",2,fabs(hit.getPosZ()) < 23.0)) {continue;} //it is a hit inside a part of scintillator covered by a detector
     stats.fillHistogram("GHF4HA_Passed_TOT",ns(tot));
+    stats.fillHistogram("GHF4HA_Zpos",hit.getPosZ());
     hits.push_back(event.getHits().at(i));//save this hit - it can be the annihilator or scattered gamma hit
   }
   return hits;
