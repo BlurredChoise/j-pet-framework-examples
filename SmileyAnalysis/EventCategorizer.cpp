@@ -373,6 +373,10 @@ void EventCategorizer::initialiseHistograms(){
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_DeltaPhi_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
     new TH2D("CF2G4H2SH_ScaHits_DVD", "D1i vs D2i", 240, -6.0, 6.0, 240, -6.0, 6.0),
     "\\Delta_{1i} [ns]", "\\Delta_{2i} [ns]"
   );
@@ -394,7 +398,15 @@ void EventCategorizer::initialiseHistograms(){
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_30", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_30_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_10_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    "\\Delta\\phi [deg]", "Counts"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_30_GAEPR", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
     "\\theta_{1} [deg]", "\\theta_{2} [deg]"
   );
   getStatistics().createHistogramWithAxes(

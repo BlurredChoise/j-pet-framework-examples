@@ -455,12 +455,14 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     fhe.fTheta1 = calculateScatteringAngle(ahit_1, shit_1);
     fhe.fTheta2 = calculateScatteringAngle(ahit_2, shit_2);
     fhe.fDeltaPhi = calculateDeltaPhi(ahit_1,ahit_2,shit_1,shit_2);
+    fhe.fDeltaPhiGAEPR = calculateDeltaPhi(ahit_1,ahit_2,shit_1,shit_2,true);
     //Fill histograms
     stats.fillHistogram("CF2G4H2SH_ScaHits_FoundIndexes",static_cast<double>(fhe.fScatGamma1Index),static_cast<double>(fhe.fScatGamma2Index));
     stats.fillHistogram("CF2G4H2SH_Theta1_vs_Theta2",fhe.fTheta1,fhe.fTheta2);
     stats.fillHistogram("CF2G4H2SH_Theta1",fhe.fTheta1);
     stats.fillHistogram("CF2G4H2SH_Theta2",fhe.fTheta2);
     stats.fillHistogram("CF2G4H2SH_DeltaPhi",fhe.fDeltaPhi);
+    stats.fillHistogram("CF2G4H2SH_DeltaPhi_GAEPR",fhe.fDeltaPhiGAEPR);
     double delta11 = caclulateDelta(ahit_1,shit_1);//[ns]
     double delta21 = caclulateDelta(ahit_2,shit_1);//[ns]
     double delta12 = caclulateDelta(ahit_1,shit_2);//[ns]
@@ -481,6 +483,8 @@ bool EventCategorizerTools::checkFor2Gamma4HitsCircleCut(
     std::string str_radius = std::to_string(static_cast<int>(theta_radius));
     std::string hname = "CF2G4HCC_DeltaPhi_Radius_"+str_radius;
     stats.fillHistogram(hname.c_str(),fhe.fDeltaPhi);
+    hname = "CF2G4HCC_DeltaPhi_Radius_"+str_radius + "_GAEPR";
+    stats.fillHistogram(hname.c_str(),fhe.fDeltaPhiGAEPR);
     hname = "CF2G4HCC_Theta1_vs_Theta2_Radius_"+str_radius;
     stats.fillHistogram(hname.c_str(),fhe.fTheta1,fhe.fTheta2);
     return true;
@@ -488,7 +492,7 @@ bool EventCategorizerTools::checkFor2Gamma4HitsCircleCut(
   return false;
 }
 
-double EventCategorizerTools::calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2)
+double EventCategorizerTools::calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2, bool use_gaepr_method)
 {
   TVector3 apos = calculateAnnihilationPoint(ahit_1,ahit_2); //annihilation point
   TVector3 amom_1 = (ahit_1.getPos()-apos).Unit(); //annihilation gamma momentum direction
@@ -497,7 +501,11 @@ double EventCategorizerTools::calculateDeltaPhi(const JPetHit& ahit_1,const JPet
   TVector3 smom_2 = (shit_2.getPos()-ahit_2.getPos()).Unit(); //scattered gamma momentum direction
   TVector3 plane_nv_1 = amom_1.Cross(smom_1).Unit(); //scattering plane normal vector
   TVector3 plane_nv_2 = amom_2.Cross(smom_2).Unit(); //scattering plane normal vector
-  return plane_nv_1.Angle(plane_nv_2) * TMath::RadToDeg();
+  double delta_phi = plane_nv_1.Angle(plane_nv_2) * TMath::RadToDeg();
+  if (use_gaepr_method) {
+    return 180.0 - delta_phi;
+  }
+  return delta_phi;
 }
 
 double EventCategorizerTools::caclulateDelta(const JPetHit& ahit,const JPetHit& hit)

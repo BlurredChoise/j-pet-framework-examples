@@ -48,6 +48,7 @@ struct FourHitsEvent
   double fTheta1 = 0.0;
   double fTheta2 = 0.0;
   double fDeltaPhi = 0.0;
+  double fDeltaPhiGAEPR = 0.0;
 };
 
 struct DVDFilter
@@ -109,7 +110,7 @@ public:
   //4 hits methods
   static bool checkFor2Gamma4Hits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap);
   static bool checkFor2Gamma4Hits2ScatteringHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd);
-  static double calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2);
+  static double calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2, bool use_gaepr_method = false);
   static double ns(double ps);
   static double caclulateDelta(const JPetHit& ahit,const JPetHit& hit);
   static bool IsInsideCircle(const double& theta1, const double& theta2, const double& theta_radius);
