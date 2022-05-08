@@ -35,6 +35,7 @@ def get_img_path(output_dir_path,obj):
   return str(output_dir_path/img_name)
 
 def format_obj(obj):
+  obj.Scale(obj.GetEntries())
   obj.SetTitle("")
   obj.GetYaxis().SetTitleFont(132)
   obj.GetXaxis().SetTitleFont(132)
