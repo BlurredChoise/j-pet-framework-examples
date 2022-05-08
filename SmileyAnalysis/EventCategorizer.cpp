@@ -189,17 +189,19 @@ bool EventCategorizer::exec()
     vector<JPetEvent> events;
     for (uint i = 0; i < timeWindow->getNumberOfEvents(); i++) {
       const auto& event = dynamic_cast<const JPetEvent&>(timeWindow->operator[](i));
-      //First extract only useful hits for 2+2 analysis (not prompt and in range |z|<23 cm)
+      //First extract only useful hits for 2+2 analysis (not prompt,not noise and in range |z|<23 cm)
       auto hits = ECT::getHitsFor4HitsAnalysis(getStatistics(),event,fAParams);
       FourHitsEvent fhe;
-      //Condition 1: We have at least 4 hits and we found annihilation gammas
-      if (ECT::notPassed(getStatistics(),"effGeneralSelection",0,ECT::checkFor2Gamma4Hits(hits, getStatistics(), fhe,fAParams))) {continue;}
-      //Condition 2: We have found scattering hits for each annihilation gamma
-      if (ECT::notPassed(getStatistics(),"effGeneralSelection",1,ECT::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd))) {continue;}
-      //Condition 3: Scattering angles are in a circle with radiu 30 deg around (81.6,81.6) deg
-      if (ECT::notPassed(getStatistics(),"effGeneralSelection",2,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0))) {continue;}
-      //Condition 4: Scattering angles are in a circle with radiu 10 deg around (81.6,81.6) deg
-      if (ECT::notPassed(getStatistics(),"effGeneralSelection",3,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 10.0))) {continue;}
+      //Condition 1: We have at least 4 hits
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",0,ECT::checkHitsMinNumber(getStatistics(),hits, 4))) { continue;}
+      //Condition 2: We found annihilation gammas
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",1,ECT::checkFor2Gamma4Hits2AnnihilationHits(hits, getStatistics(), fhe,fAParams))) { continue;}
+      //Condition 3: We have found scattering hits for each annihilation gamma
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",2,ECT::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd))) {continue;}
+      //Condition 4: Scattering angles are in a circle with radiu 30 deg around (81.6,81.6) deg
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",3,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0))) {continue;}
+      //Condition 5: Scattering angles are in a circle with radiu 10 deg around (81.6,81.6) deg
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",4,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 10.0))) {continue;}
     }
   } else { return false; }
   return true;
@@ -223,10 +225,15 @@ void EventCategorizer::initialiseHistograms(){
     new TEfficiency("effHitsPreparation","Hits preparation;Selection;#epsilon",3,-0.5,2.5)
   );
   getStatistics().createObject(
-    new TEfficiency("effGeneralSelection","General program selection workflow;Selection;#epsilon",4,-0.5,3.5)
+    new TEfficiency("effGeneralSelection","General program selection workflow;Selection;#epsilon",5,-0.5,4.5)
   );
   getStatistics().createObject(
     new TEfficiency("effAnnHitsFinding","Finding annhilation hits;Selection;#epsilon",5,-0.5,4.5)
+  );
+  //CHMN_FoundHitsSize
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CHMN_FoundHitsSize", "Hits number", 20, -0.5, 19.5),
+    "Hits number", "Counts"
   );
   //GHF4HA - getHitsFor4HitsAnalysis
   getStatistics().createHistogramWithAxes(

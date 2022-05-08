@@ -281,6 +281,13 @@ bool EventCategorizerTools::notPassed(JPetStatistics& stats,const std::string& e
   return !condition;
 }
 
+bool EventCategorizerTools::checkHitsMinNumber(JPetStatistics& stats,const std::vector<JPetHit>& hits, const uint min_size)
+{
+  uint hits_size = hits.size();
+  stats.fillHistogram("CHMN_FoundHitsSize",hits_size);
+  return min_size <= hits_size;
+}
+
 /**
 ** Extracts useful hits for 2+2 gits analysis
 ** Conditions:
@@ -316,12 +323,9 @@ std::vector<JPetHit> EventCategorizerTools::getHitsFor4HitsAnalysis(JPetStatisti
 ** 2.1 angle between angles is around 180 deg
 ** 2.2 time difference between 2 hits is lower then given by user.
 **/
-bool EventCategorizerTools::checkFor2Gamma4Hits(
+bool EventCategorizerTools::checkFor2Gamma4Hits2AnnihilationHits(
   const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap)
 {
-  if (hits.size() < 4) {
-    return false;
-  }
   uint potential_ann_gamma_1_index = 0;//potential 1st annihilation gamma hit index in hits list
   uint potential_ann_gamma_2_index = 0;//potential 2nd annihilation gamma hit index in hits list
   bool passed;

@@ -108,7 +108,7 @@ public:
   static double calculatePlaneCenterDistance(const JPetHit& firstHit,
       const JPetHit& secondHit, const JPetHit& thirdHit);
   //4 hits methods
-  static bool checkFor2Gamma4Hits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap);
+  static bool checkFor2Gamma4Hits2AnnihilationHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap);
   static bool checkFor2Gamma4Hits2ScatteringHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd);
   static double calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2, bool use_gaepr_method = false);
   static double ns(double ps);
@@ -119,6 +119,7 @@ public:
   static std::vector<JPetHit> getHitsFor4HitsAnalysis(JPetStatistics& stats,const JPetEvent& event, const AnalysisParams& ap);
   static bool isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max);
   static bool notPassed(JPetStatistics& stats,const std::string& eff_obj_name,const uint& selection_id,bool condition);
+  static bool checkHitsMinNumber(JPetStatistics& stats,const std::vector<JPetHit>& hits, const uint min_size);
 
 };
 
