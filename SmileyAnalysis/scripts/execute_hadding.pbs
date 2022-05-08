@@ -1,0 +1,31 @@
+#!/bin/sh
+
+#PBS -q i12h
+#PBS -l nodes=1:ppn=4
+#PBS -N hadd_ext
+#PBS -V # All env. variables are passed into the cluster
+
+
+cd ${PBS_O_WORKDIR}
+PWD_DIR=$(pwd)
+
+#Performs hadding files from  SmileyAnalysis.x and extract final histograms
+
+# STEP 1: Hadd files
+SECONDS=0
+python hadd_files.py --input-dir ${PWD_DIR} --output-dir ${PWD_DIR}
+HADDING_TIME=$SECONDS
+
+# STEP 2: Extract histograms
+OUTPUT_DIR=${PWD_DIR}/histograms
+mkdir ${OUTPUT_DIR}
+SECONDS=0
+python extract_histograms.py --input-file ${PWD_DIR}/results.root --output-dir ${OUTPUT_DIR}
+EXTRACTING_TIME=${SECONDS}
+
+# Display results and finish work
+echo "----------------------------------------------------------------"
+echo "Hadding time    [s]: ${HADDING_TIME}"
+echo "Extracting time [s]: ${EXTRACTING_TIME}"
+echo "----------------------------------------------------------------"
+exit 0;
