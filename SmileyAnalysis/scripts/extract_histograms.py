@@ -7,6 +7,7 @@ from pathlib import Path
 import argparse
 import sys
 import copy
+import json
 
 def is_efficiency_obj(name):
   return name[0:3] == "eff"
@@ -56,6 +57,31 @@ def draw_objects(output_dir_path,objects):
     h.Draw("colz")
     c.Print(get_img_path(output_dir_path,h))
 
+def is_deltaphi_hist(hist):
+  return "DeltaPhi" in hist.GetName()
+
+def extract_statistics(objects,output_dir_path):
+  stats = {}
+  for h in objects["h1d"]:
+    if h.GetName() == "CHMN_FoundHitsSize":
+      stats[u"events-detected"] = h.GetEntries()
+    if "DeltaPhi" not in h.GetName():
+      continue
+    h.ResetStats()
+    stats[u"{hn}".format(hn=h.GetName())] = {
+      u"mean" : h.GetMean(1),
+      u"mean-error" : h.GetMean(11),
+      u"std" : h.GetStdDev(1),
+      u"std-error" : h.GetStdDev(11),
+      u"skewness" : h.GetSkewness(1),
+      u"skewness-error" : h.GetSkewness(11),
+      u"entries" : h.GetEntries()
+    }
+  file_path = output_dir_path/"statistics.json"
+  with file_path.open(mode="w",encoding="utf-8") as file:
+    file.write(u"{x}".format(x=json.dumps(stats, indent=2,ensure_ascii=False).encode('utf-8')))
+  
+
 def parse_args():
   ap = argparse.ArgumentParser()
   ap.add_argument(
@@ -82,7 +108,9 @@ def main():
   if not output_dir_path.exists():
     print("Creating output directory")
     output_dir_path.mkdir()
-  draw_objects(output_dir_path,load_objects(input_file_path))
+  objs = load_objects(input_file_path)
+  draw_objects(output_dir_path,objs)
+  extract_statistics(objs,output_dir_path)
 
 if __name__ == "__main__":
   main()
