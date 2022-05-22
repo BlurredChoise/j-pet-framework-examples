@@ -395,6 +395,17 @@ void EventCategorizer::initialiseHistograms(){
     new TH1D("CF2G4H2SH_Theta2", "2nd gamma scattering angle", 181, -0.5, 180.5),
     "\\Theta_{} [deg]", "Counts"
   );
+  
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_AnnHit_Zpos", "Z position of annihilation hit", 201, -50.25, 50.25),
+    "Z axis position [cm]", "Counts"
+  );
+  
+  getStatistics().createHistogramWithAxes(
+    new TH1D("CF2G4H2SH_ScatHit_Zpos", "Z position of scattered hit", 201, -50.25, 50.25),
+    "Z axis position [cm]", "Counts"
+  );
+
   //CF2G4HCC - checkFor2Gamma4HitsCircleCut
   getStatistics().createHistogramWithAxes(
     new TH1D("CF2G4HCC_DeltaPhi_Radius_30", "Delta phi", 181, -0.5, 180.5),

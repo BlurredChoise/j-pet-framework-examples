@@ -473,6 +473,12 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     double delta22 = caclulateDelta(ahit_2,shit_2);//[ns]
     stats.fillHistogram("CF2G4H2SH_ScaHits_DVD",delta11,delta21);
     stats.fillHistogram("CF2G4H2SH_ScaHits_DVD",delta12,delta22);
+    
+    stats.fillHistogram("CF2G4H2SH_AnnHit_Zpos",ahit_1.getPosZ());
+    stats.fillHistogram("CF2G4H2SH_AnnHit_Zpos",ahit_2.getPosZ());
+    stats.fillHistogram("CF2G4H2SH_ScatHit_Zpos",shit_1.getPosZ());
+    stats.fillHistogram("CF2G4H2SH_ScatHit_Zpos",shit_2.getPosZ());
+    
     return true;
   }
   return false;  
