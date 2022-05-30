@@ -479,6 +479,8 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     stats.fillHistogram("CF2G4H2SH_ScatHit_Zpos",shit_1.getPosZ());
     stats.fillHistogram("CF2G4H2SH_ScatHit_Zpos",shit_2.getPosZ());
     
+    stats.fillHistogram("CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_All",fhe.fTheta1,fhe.fTheta2,fhe.fDeltaPhiGAEPR);
+    
     return true;
   }
   return false;  
@@ -497,6 +499,8 @@ bool EventCategorizerTools::checkFor2Gamma4HitsCircleCut(
     stats.fillHistogram(hname.c_str(),fhe.fDeltaPhiGAEPR);
     hname = "CF2G4HCC_Theta1_vs_Theta2_Radius_"+str_radius;
     stats.fillHistogram(hname.c_str(),fhe.fTheta1,fhe.fTheta2);
+    hname = "CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_Radius_" + str_radius;
+    stats.fillHistogram(hname.c_str(),fhe.fTheta1,fhe.fTheta2,fhe.fDeltaPhiGAEPR);
     return true;
   }
   return false;

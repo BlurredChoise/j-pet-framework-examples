@@ -255,7 +255,7 @@ void EventCategorizer::initialiseHistograms(){
     "Time Difference [ps]", "Number of Hit Pairs"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H_AllHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    new TH1D("CF2G4H_AllHits_ThetaDiff", "Angle difference of 2 gamma hits ", 180, 0.0, 180.0),
     "Hits theta diff [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
@@ -284,7 +284,7 @@ void EventCategorizer::initialiseHistograms(){
     "Time Difference [ps]", "Number of Hit Pairs"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H_PreAnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    new TH1D("CF2G4H_PreAnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 180, 0.0, 180.0),
     "Hits theta diff [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
@@ -325,7 +325,7 @@ void EventCategorizer::initialiseHistograms(){
     "Time Difference [ps]", "Number of Hit Pairs"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H_AnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 181, -0.5, 180.5),
+    new TH1D("CF2G4H_AnnHits_ThetaDiff", "Angle difference of 2 gamma hits ", 180, 0.0, 180.0),
     "Hits theta diff [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
@@ -372,15 +372,15 @@ void EventCategorizer::initialiseHistograms(){
     "First s-gamma index", "Second s-gamma index"
   );
   getStatistics().createHistogramWithAxes(
-    new TH2D("CF2G4H2SH_Theta1_vs_Theta2", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    new TH2D("CF2G4H2SH_Theta1_vs_Theta2", "Scattering angles", 180, 0.0, 180.0, 180, 0.0, 180.0),
     "\\theta_{1} [deg]", "\\theta_{2} [deg]"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H2SH_DeltaPhi", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4H2SH_DeltaPhi", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H2SH_DeltaPhi_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4H2SH_DeltaPhi_GAEPR", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
@@ -388,11 +388,11 @@ void EventCategorizer::initialiseHistograms(){
     "\\Delta_{1i} [ns]", "\\Delta_{2i} [ns]"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H2SH_Theta1", "1st gamma scattering angle", 181, -0.5, 180.5),
+    new TH1D("CF2G4H2SH_Theta1", "1st gamma scattering angle", 180, 0.0, 180.0),
     "\\Theta_{1} [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4H2SH_Theta2", "2nd gamma scattering angle", 181, -0.5, 180.5),
+    new TH1D("CF2G4H2SH_Theta2", "2nd gamma scattering angle", 180, 0.0, 180.0),
     "\\Theta_{} [deg]", "Counts"
   );
   
@@ -408,27 +408,39 @@ void EventCategorizer::initialiseHistograms(){
 
   //CF2G4HCC - checkFor2Gamma4HitsCircleCut
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4HCC_DeltaPhi_Radius_30", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_30", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4HCC_DeltaPhi_Radius_10", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_10", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4HCC_DeltaPhi_Radius_30_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_30_GAEPR", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH1D("CF2G4HCC_DeltaPhi_Radius_10_GAEPR", "Delta phi", 181, -0.5, 180.5),
+    new TH1D("CF2G4HCC_DeltaPhi_Radius_10_GAEPR", "Delta phi", 180, 0.0, 180.0),
     "\\Delta\\phi [deg]", "Counts"
   );
   getStatistics().createHistogramWithAxes(
-    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_30", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_30", "Scattering angles", 180, 0.0, 180.0, 180, 0.0, 180.0),
     "\\theta_{1} [deg]", "\\theta_{2} [deg]"
   );
   getStatistics().createHistogramWithAxes(
-    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_10", "Scattering angles", 181, -0.5, 180.5, 181, -0.5, 180.5),
+    new TH2D("CF2G4HCC_Theta1_vs_Theta2_Radius_10", "Scattering angles", 180, 0.0, 180.0, 180, 0.0, 180.0),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH3D("CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_All", "All thetas", 180, 0.0, 180.0, 180, 0.0, 180.0,180, 0.0, 180.0),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH3D("CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_Radius_30", "Thetas in circle 30 deg", 180, 0.0, 180.0, 180, 0.0, 180.0,180, 0.0, 180.0),
+    "\\theta_{1} [deg]", "\\theta_{2} [deg]"
+  );
+  getStatistics().createHistogramWithAxes(
+    new TH3D("CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_Radius_10", "Thetas in circle 10 deg", 180, 0.0, 180.0, 180, 0.0, 180.0,180, 0.0, 180.0),
     "\\theta_{1} [deg]", "\\theta_{2} [deg]"
   );
 }
