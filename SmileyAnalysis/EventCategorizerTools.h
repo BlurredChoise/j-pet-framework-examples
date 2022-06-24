@@ -74,6 +74,52 @@ struct AnalysisParams
   std::string fTOTCalculationType;
 };
 
+struct FourHitsData{
+  float mT1H1PosX = 0.0;
+  float mT1H1PosY = 0.0;
+  float mT1H1PosZ = 0.0;
+  float mT1H1MomX = 0.0;
+  float mT1H1MomY = 0.0;
+  float mT1H1MomZ = 0.0;
+  float mT1H1Edep = 0.0;
+  //2nd track 1st hit
+  float mT2H1PosX = 0.0;
+  float mT2H1PosY = 0.0;
+  float mT2H1PosZ = 0.0;
+  float mT2H1MomX = 0.0;
+  float mT2H1MomY = 0.0;
+  float mT2H1MomZ = 0.0;
+  float mT2H1Edep = 0.0;
+  //1st track 2nd hit
+  float mT1H2PosX = 0.0;
+  float mT1H2PosY = 0.0;
+  float mT1H2PosZ = 0.0;
+  float mT1H2MomX = 0.0;
+  float mT1H2MomY = 0.0;
+  float mT1H2MomZ = 0.0;
+  float mT1H2Edep = 0.0;
+  //2nd track 2nd hit
+  float mT2H2PosX = 0.0;
+  float mT2H2PosY = 0.0;
+  float mT2H2PosZ = 0.0;
+  float mT2H2MomX = 0.0;
+  float mT2H2MomY = 0.0;
+  float mT2H2MomZ = 0.0;
+  float mT2H2Edep = 0.0;
+  //Additional info
+  float mTheta1 = 0.0;
+  float mTheta2 = 0.0;
+  float mDeltaPhi = 0.0;  
+};
+
+struct GammaMomenta
+{
+  TVector3 mom_t1h1;
+  TVector3 mom_t2h1;
+  TVector3 mom_t1h2;
+  TVector3 mom_t2h2;
+};
+
 /**
  * @brief Tools for Event Categorization
  *
@@ -109,7 +155,7 @@ public:
       const JPetHit& secondHit, const JPetHit& thirdHit);
   //4 hits methods
   static bool checkFor2Gamma4Hits2AnnihilationHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const AnalysisParams& ap);
-  static bool checkFor2Gamma4Hits2ScatteringHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd);
+  static bool checkFor2Gamma4Hits2ScatteringHits(const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd, FourHitsData& fhd, const AnalysisParams& ap);
   static double calculateDeltaPhi(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2, bool use_gaepr_method = false);
   static double ns(double ps);
   static double caclulateDelta(const JPetHit& ahit,const JPetHit& hit);
@@ -120,6 +166,7 @@ public:
   static bool isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max);
   static bool notPassed(JPetStatistics& stats,const std::string& eff_obj_name,const uint& selection_id,bool condition);
   static bool checkHitsMinNumber(JPetStatistics& stats,const std::vector<JPetHit>& hits, const uint min_size);
+  static GammaMomenta getMomenta(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2);
 
 };
 

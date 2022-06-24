@@ -177,6 +177,45 @@ bool EventCategorizer::init()
   fOutputEvents = new JPetTimeWindow("JPetEvent");
   // Initialise hisotgrams
   if(fSaveControlHistos) initialiseHistograms();
+  
+  pFlatTree = new TTree("SAFlatTree","flat tree for Smiley Analysis");
+  //1st track 1st hit
+  pFlatTree->Branch("t1h1_px",&fFHD.mT1H1PosX, "t1h1_px/F");
+  pFlatTree->Branch("t1h1_py",&fFHD.mT1H1PosY, "t1h1_py/F");
+  pFlatTree->Branch("t1h1_pz",&fFHD.mT1H1PosZ, "t1h1_pz/F");
+  pFlatTree->Branch("t1h1_mx",&fFHD.mT1H1MomX, "t1h1_mx/F");
+  pFlatTree->Branch("t1h1_my",&fFHD.mT1H1MomY, "t1h1_my/F");
+  pFlatTree->Branch("t1h1_mz",&fFHD.mT1H1MomZ, "t1h1_mz/F");
+  pFlatTree->Branch("t1h1_ed",&fFHD.mT1H1Edep, "t1h1_ed/F");
+  //2nd track 1st hit
+  pFlatTree->Branch("t2h1_px",&fFHD.mT2H1PosX, "t2h1_px/F");
+  pFlatTree->Branch("t2h1_py",&fFHD.mT2H1PosY, "t2h1_py/F");
+  pFlatTree->Branch("t2h1_pz",&fFHD.mT2H1PosZ, "t2h1_pz/F");
+  pFlatTree->Branch("t2h1_mx",&fFHD.mT2H1MomX, "t2h1_mx/F");
+  pFlatTree->Branch("t2h1_my",&fFHD.mT2H1MomY, "t2h1_my/F");
+  pFlatTree->Branch("t2h1_mz",&fFHD.mT2H1MomZ, "t2h1_mz/F");
+  pFlatTree->Branch("t2h1_ed",&fFHD.mT2H1Edep, "t2h1_ed/F");
+  //1st track 2nd hit
+  pFlatTree->Branch("t1h2_px",&fFHD.mT1H2PosX, "t1h2_px/F");
+  pFlatTree->Branch("t1h2_py",&fFHD.mT1H2PosY, "t1h2_py/F");
+  pFlatTree->Branch("t1h2_pz",&fFHD.mT1H2PosZ, "t1h2_pz/F");
+  pFlatTree->Branch("t1h2_mx",&fFHD.mT1H2MomX, "t1h2_mx/F");
+  pFlatTree->Branch("t1h2_my",&fFHD.mT1H2MomY, "t1h2_my/F");
+  pFlatTree->Branch("t1h2_mz",&fFHD.mT1H2MomZ, "t1h2_mz/F");
+  pFlatTree->Branch("t1h2_ed",&fFHD.mT1H2Edep, "t1h2_ed/F");
+  //2nd track 2nd hit
+  pFlatTree->Branch("t2h2_px",&fFHD.mT2H2PosX, "t2h2_px/F");
+  pFlatTree->Branch("t2h2_py",&fFHD.mT2H2PosY, "t2h2_py/F");
+  pFlatTree->Branch("t2h2_pz",&fFHD.mT2H2PosZ, "t2h2_pz/F");
+  pFlatTree->Branch("t2h2_mx",&fFHD.mT2H2MomX, "t2h2_mx/F");
+  pFlatTree->Branch("t2h2_my",&fFHD.mT2H2MomY, "t2h2_my/F");
+  pFlatTree->Branch("t2h2_mz",&fFHD.mT2H2MomZ, "t2h2_mz/F");
+  pFlatTree->Branch("t2h2_ed",&fFHD.mT2H2Edep, "t2h2_ed/F");
+  //Additional info
+  pFlatTree->Branch("theta_1",&fFHD.mTheta1,"theta_1/F");
+  pFlatTree->Branch("theta_2",&fFHD.mTheta2,"theta_2/F");
+  pFlatTree->Branch("delta_phi",&fFHD.mDeltaPhi,"delta_phi/F");
+  
   return true;
 }
 
@@ -197,7 +236,9 @@ bool EventCategorizer::exec()
       //Condition 2: We found annihilation gammas
       if (ECT::notPassed(getStatistics(),"effGeneralSelection",1,ECT::checkFor2Gamma4Hits2AnnihilationHits(hits, getStatistics(), fhe,fAParams))) { continue;}
       //Condition 3: We have found scattering hits for each annihilation gamma
-      if (ECT::notPassed(getStatistics(),"effGeneralSelection",2,ECT::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd))) {continue;}
+      if (ECT::notPassed(getStatistics(),"effGeneralSelection",2,ECT::checkFor2Gamma4Hits2ScatteringHits(hits, getStatistics(), fhe, dvd,fFHD,fAParams))) {continue;}
+      //Fill tree
+      pFlatTree->Fill();
       //Condition 4: Scattering angles are in a circle with radiu 30 deg around (81.6,81.6) deg
       if (ECT::notPassed(getStatistics(),"effGeneralSelection",3,ECT::checkFor2Gamma4HitsCircleCut(getStatistics(), fhe, 30.0))) {continue;}
       //Condition 5: Scattering angles are in a circle with radiu 10 deg around (81.6,81.6) deg
@@ -210,6 +251,7 @@ bool EventCategorizer::exec()
 bool EventCategorizer::terminate()
 {
   INFO("Event categorization completed.");
+  pFlatTree->Write();
   return true;
 }
 

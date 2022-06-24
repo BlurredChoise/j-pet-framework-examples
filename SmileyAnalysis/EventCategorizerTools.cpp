@@ -426,7 +426,7 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2AnnihilationHits(
 ** 2. Each scattering hit is inside different ellipse.
 **/
 bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
-  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd
+  const std::vector<JPetHit>& hits, JPetStatistics& stats, FourHitsEvent& fhe, const DVDFilter& dvd, FourHitsData& fhd, const AnalysisParams& ap
 )
 {
   //ahit - annihilation gamma hit
@@ -480,6 +480,45 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     stats.fillHistogram("CF2G4H2SH_ScatHit_Zpos",shit_2.getPosZ());
     
     stats.fillHistogram("CF2G4HCC_Theta1_vs_Theta2_vs_DeltaPhi_All",fhe.fTheta1,fhe.fTheta2,fhe.fDeltaPhiGAEPR);
+    
+    GammaMomenta gm = getMomenta(ahit_1,ahit_2,shit_1,shit_2);
+    
+    //Fill FHD
+    fhd.mT1H1PosX = ahit_1.getPosX();
+    fhd.mT1H1PosY = ahit_1.getPosY();
+    fhd.mT1H1PosZ = ahit_1.getPosZ();
+    fhd.mT1H1MomX = gm.mom_t1h1.x();
+    fhd.mT1H1MomY = gm.mom_t1h1.y();
+    fhd.mT1H1MomZ = gm.mom_t1h1.z();
+    fhd.mT1H1Edep = HitFinderTools::calculateTOT(ahit_1,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
+    //2nd track 1st hit
+    fhd.mT2H1PosX = ahit_2.getPosX();
+    fhd.mT2H1PosY = ahit_2.getPosY();
+    fhd.mT2H1PosZ = ahit_2.getPosZ();
+    fhd.mT2H1MomX = gm.mom_t2h1.x();
+    fhd.mT2H1MomY = gm.mom_t2h1.y();
+    fhd.mT2H1MomZ = gm.mom_t2h1.z();
+    fhd.mT2H1Edep = HitFinderTools::calculateTOT(ahit_2,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
+    //1st track 2nd hit
+    fhd.mT1H2PosX = shit_1.getPosX();
+    fhd.mT1H2PosY = shit_1.getPosY();
+    fhd.mT1H2PosZ = shit_1.getPosZ();
+    fhd.mT1H2MomX = gm.mom_t1h1.x();
+    fhd.mT1H2MomY = gm.mom_t1h2.y();
+    fhd.mT1H2MomZ = gm.mom_t1h2.z();
+    fhd.mT1H2Edep = HitFinderTools::calculateTOT(shit_1,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
+    //2nd track 2nd hit
+    fhd.mT2H2PosX = shit_2.getPosX();
+    fhd.mT2H2PosY = shit_2.getPosY();
+    fhd.mT2H2PosZ = shit_2.getPosZ();
+    fhd.mT2H2MomX = gm.mom_t2h2.x();
+    fhd.mT2H2MomY = gm.mom_t2h2.y();
+    fhd.mT2H2MomZ = gm.mom_t2h2.z();
+    fhd.mT2H2Edep = HitFinderTools::calculateTOT(shit_2,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));;
+    //Additional info
+    fhd.mTheta1 = fhe.fTheta1;
+    fhd.mTheta2 = fhe.fTheta2;
+    fhd.mDeltaPhi = fhe.fDeltaPhiGAEPR;  
     
     return true;
   }
@@ -539,6 +578,21 @@ bool EventCategorizerTools::IsInsideCircle(const double& theta1, const double& t
 bool EventCategorizerTools::isInTOTRange(const double& tot, const double& tot_cut_min, const double& tot_cut_max)
 {
   return tot_cut_min < tot && tot < tot_cut_max;
+}
+
+GammaMomenta EventCategorizerTools::getMomenta(const JPetHit& ahit_1,const JPetHit& ahit_2, const JPetHit& shit_1, const JPetHit& shit_2)
+{
+  TVector3 apos = calculateAnnihilationPoint(ahit_1,ahit_2); //annihilation point
+  TVector3 amom_1 = (ahit_1.getPos()-apos).Unit(); //annihilation gamma momentum direction
+  TVector3 amom_2 = (ahit_2.getPos()-apos).Unit(); //annihilation gamma momentum direction
+  TVector3 smom_1 = (shit_1.getPos()-ahit_1.getPos()).Unit(); //scattered gamma momentum direction
+  TVector3 smom_2 = (shit_2.getPos()-ahit_2.getPos()).Unit(); //scattered gamma momentum direction
+  GammaMomenta gm;
+  gm.mom_t1h1 = amom_1;
+  gm.mom_t2h1 = amom_2;
+  gm.mom_t1h2 = smom_1;
+  gm.mom_t2h2 = smom_2;
+  return gm;
 }
 
 

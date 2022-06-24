@@ -101,5 +101,9 @@ protected:
   double fEllipseRightRotAngle = 60; //deg
   AnalysisParams fAParams;
   
+  //Hits data for flat tree
+  TTree* pFlatTree = nullptr;
+  FourHitsData fFHD;
+  
 };
 #endif /* !EVENTCATEGORIZER_H */
