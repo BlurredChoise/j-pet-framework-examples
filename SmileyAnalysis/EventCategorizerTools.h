@@ -82,6 +82,8 @@ struct FourHitsData{
   float mT1H1MomY = 0.0;
   float mT1H1MomZ = 0.0;
   float mT1H1Edep = 0.0;
+  float mT1H1Time = 0.0;
+  int mT1H1LayerID = 0;
   //2nd track 1st hit
   float mT2H1PosX = 0.0;
   float mT2H1PosY = 0.0;
@@ -90,6 +92,8 @@ struct FourHitsData{
   float mT2H1MomY = 0.0;
   float mT2H1MomZ = 0.0;
   float mT2H1Edep = 0.0;
+  float mT2H1Time = 0.0;
+  int mT2H1LayerID = 0;
   //1st track 2nd hit
   float mT1H2PosX = 0.0;
   float mT1H2PosY = 0.0;
@@ -98,6 +102,8 @@ struct FourHitsData{
   float mT1H2MomY = 0.0;
   float mT1H2MomZ = 0.0;
   float mT1H2Edep = 0.0;
+  float mT1H2Time = 0.0;
+  int mT1H2LayerID = 0;
   //2nd track 2nd hit
   float mT2H2PosX = 0.0;
   float mT2H2PosY = 0.0;
@@ -106,6 +112,8 @@ struct FourHitsData{
   float mT2H2MomY = 0.0;
   float mT2H2MomZ = 0.0;
   float mT2H2Edep = 0.0;
+  float mT2H2Time = 0.0;
+  int mT2H2LayerID = 0;
   //Additional info
   float mTheta1 = 0.0;
   float mTheta2 = 0.0;

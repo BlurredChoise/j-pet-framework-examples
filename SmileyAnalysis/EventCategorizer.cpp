@@ -180,37 +180,45 @@ bool EventCategorizer::init()
   
   pFlatTree = new TTree("SAFlatTree","flat tree for Smiley Analysis");
   //1st track 1st hit
-  pFlatTree->Branch("t1h1_px",&fFHD.mT1H1PosX, "t1h1_px/F");
-  pFlatTree->Branch("t1h1_py",&fFHD.mT1H1PosY, "t1h1_py/F");
-  pFlatTree->Branch("t1h1_pz",&fFHD.mT1H1PosZ, "t1h1_pz/F");
-  pFlatTree->Branch("t1h1_mx",&fFHD.mT1H1MomX, "t1h1_mx/F");
-  pFlatTree->Branch("t1h1_my",&fFHD.mT1H1MomY, "t1h1_my/F");
-  pFlatTree->Branch("t1h1_mz",&fFHD.mT1H1MomZ, "t1h1_mz/F");
+  pFlatTree->Branch("t1h1_x",&fFHD.mT1H1PosX, "t1h1_x/F");
+  pFlatTree->Branch("t1h1_y",&fFHD.mT1H1PosY, "t1h1_y/F");
+  pFlatTree->Branch("t1h1_z",&fFHD.mT1H1PosZ, "t1h1_z/F");
+  pFlatTree->Branch("t1h1_px",&fFHD.mT1H1MomX, "t1h1_px/F");
+  pFlatTree->Branch("t1h1_py",&fFHD.mT1H1MomY, "t1h1_py/F");
+  pFlatTree->Branch("t1h1_pz",&fFHD.mT1H1MomZ, "t1h1_pz/F");
   pFlatTree->Branch("t1h1_ed",&fFHD.mT1H1Edep, "t1h1_ed/F");
+  pFlatTree->Branch("t1h1_t",&fFHD.mT1H1Time, "t1h1_t/F");
+  pFlatTree->Branch("t1h1_lid",&fFHD.mT1H1LayerID, "t1h1_lid/I");
   //2nd track 1st hit
-  pFlatTree->Branch("t2h1_px",&fFHD.mT2H1PosX, "t2h1_px/F");
-  pFlatTree->Branch("t2h1_py",&fFHD.mT2H1PosY, "t2h1_py/F");
-  pFlatTree->Branch("t2h1_pz",&fFHD.mT2H1PosZ, "t2h1_pz/F");
-  pFlatTree->Branch("t2h1_mx",&fFHD.mT2H1MomX, "t2h1_mx/F");
-  pFlatTree->Branch("t2h1_my",&fFHD.mT2H1MomY, "t2h1_my/F");
-  pFlatTree->Branch("t2h1_mz",&fFHD.mT2H1MomZ, "t2h1_mz/F");
+  pFlatTree->Branch("t2h1_x",&fFHD.mT2H1PosX, "t2h1_x/F");
+  pFlatTree->Branch("t2h1_y",&fFHD.mT2H1PosY, "t2h1_y/F");
+  pFlatTree->Branch("t2h1_z",&fFHD.mT2H1PosZ, "t2h1_z/F");
+  pFlatTree->Branch("t2h1_px",&fFHD.mT2H1MomX, "t2h1_px/F");
+  pFlatTree->Branch("t2h1_py",&fFHD.mT2H1MomY, "t2h1_py/F");
+  pFlatTree->Branch("t2h1_pz",&fFHD.mT2H1MomZ, "t2h1_pz/F");
   pFlatTree->Branch("t2h1_ed",&fFHD.mT2H1Edep, "t2h1_ed/F");
+  pFlatTree->Branch("t2h1_t",&fFHD.mT2H1Time, "t2h1_t/F");
+  pFlatTree->Branch("t2h1_lid",&fFHD.mT2H1LayerID, "t2h1_lid/I");
   //1st track 2nd hit
-  pFlatTree->Branch("t1h2_px",&fFHD.mT1H2PosX, "t1h2_px/F");
-  pFlatTree->Branch("t1h2_py",&fFHD.mT1H2PosY, "t1h2_py/F");
-  pFlatTree->Branch("t1h2_pz",&fFHD.mT1H2PosZ, "t1h2_pz/F");
-  pFlatTree->Branch("t1h2_mx",&fFHD.mT1H2MomX, "t1h2_mx/F");
-  pFlatTree->Branch("t1h2_my",&fFHD.mT1H2MomY, "t1h2_my/F");
-  pFlatTree->Branch("t1h2_mz",&fFHD.mT1H2MomZ, "t1h2_mz/F");
+  pFlatTree->Branch("t1h2_x",&fFHD.mT1H2PosX, "t1h2_x/F");
+  pFlatTree->Branch("t1h2_y",&fFHD.mT1H2PosY, "t1h2_y/F");
+  pFlatTree->Branch("t1h2_z",&fFHD.mT1H2PosZ, "t1h2_z/F");
+  pFlatTree->Branch("t1h2_px",&fFHD.mT1H2MomX, "t1h2_px/F");
+  pFlatTree->Branch("t1h2_py",&fFHD.mT1H2MomY, "t1h2_py/F");
+  pFlatTree->Branch("t1h2_pz",&fFHD.mT1H2MomZ, "t1h2_pz/F");
   pFlatTree->Branch("t1h2_ed",&fFHD.mT1H2Edep, "t1h2_ed/F");
+  pFlatTree->Branch("t1h2_t",&fFHD.mT1H2Time, "t1h2_t/F");
+  pFlatTree->Branch("t1h2_lid",&fFHD.mT1H2LayerID, "t1h2_lid/I");
   //2nd track 2nd hit
-  pFlatTree->Branch("t2h2_px",&fFHD.mT2H2PosX, "t2h2_px/F");
-  pFlatTree->Branch("t2h2_py",&fFHD.mT2H2PosY, "t2h2_py/F");
-  pFlatTree->Branch("t2h2_pz",&fFHD.mT2H2PosZ, "t2h2_pz/F");
-  pFlatTree->Branch("t2h2_mx",&fFHD.mT2H2MomX, "t2h2_mx/F");
-  pFlatTree->Branch("t2h2_my",&fFHD.mT2H2MomY, "t2h2_my/F");
-  pFlatTree->Branch("t2h2_mz",&fFHD.mT2H2MomZ, "t2h2_mz/F");
+  pFlatTree->Branch("t2h2_x",&fFHD.mT2H2PosX, "t2h2_x/F");
+  pFlatTree->Branch("t2h2_y",&fFHD.mT2H2PosY, "t2h2_y/F");
+  pFlatTree->Branch("t2h2_z",&fFHD.mT2H2PosZ, "t2h2_z/F");
+  pFlatTree->Branch("t2h2_px",&fFHD.mT2H2MomX, "t2h2_px/F");
+  pFlatTree->Branch("t2h2_py",&fFHD.mT2H2MomY, "t2h2_py/F");
+  pFlatTree->Branch("t2h2_pz",&fFHD.mT2H2MomZ, "t2h2_pz/F");
   pFlatTree->Branch("t2h2_ed",&fFHD.mT2H2Edep, "t2h2_ed/F");
+  pFlatTree->Branch("t2h2_t",&fFHD.mT2H2Time, "t2h2_t/F");
+  pFlatTree->Branch("t2h2_lid",&fFHD.mT2H2LayerID, "t2h2_lid/I");
   //Additional info
   pFlatTree->Branch("theta_1",&fFHD.mTheta1,"theta_1/F");
   pFlatTree->Branch("theta_2",&fFHD.mTheta2,"theta_2/F");
