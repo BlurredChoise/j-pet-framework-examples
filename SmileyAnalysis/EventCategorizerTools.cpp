@@ -491,7 +491,7 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     fhd.mT1H1MomY = gm.mom_t1h1.y();
     fhd.mT1H1MomZ = gm.mom_t1h1.z();
     fhd.mT1H1Edep = HitFinderTools::calculateTOT(ahit_1,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
-    fhd.mT1H1Time = ahit_1.getTime();
+    fhd.mT1H1Time = ns(ahit_1.getTime());
     fhd.mT1H1LayerID = ahit_1.getBarrelSlot().getLayer().getID();
     //2nd track 1st hit
     fhd.mT2H1PosX = ahit_2.getPosX();
@@ -501,17 +501,17 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     fhd.mT2H1MomY = gm.mom_t2h1.y();
     fhd.mT2H1MomZ = gm.mom_t2h1.z();
     fhd.mT2H1Edep = HitFinderTools::calculateTOT(ahit_2,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
-    fhd.mT2H1Time = ahit_2.getTime();
+    fhd.mT2H1Time = ns(ahit_2.getTime());
     fhd.mT2H1LayerID = ahit_2.getBarrelSlot().getLayer().getID();
     //1st track 2nd hit
     fhd.mT1H2PosX = shit_1.getPosX();
     fhd.mT1H2PosY = shit_1.getPosY();
     fhd.mT1H2PosZ = shit_1.getPosZ();
-    fhd.mT1H2MomX = gm.mom_t1h1.x();
+    fhd.mT1H2MomX = gm.mom_t1h2.x();
     fhd.mT1H2MomY = gm.mom_t1h2.y();
     fhd.mT1H2MomZ = gm.mom_t1h2.z();
     fhd.mT1H2Edep = HitFinderTools::calculateTOT(shit_1,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
-    fhd.mT1H2Time = shit_1.getTime();
+    fhd.mT1H2Time = ns(shit_1.getTime());
     fhd.mT1H2LayerID = shit_1.getBarrelSlot().getLayer().getID();
     //2nd track 2nd hit
     fhd.mT2H2PosX = shit_2.getPosX();
@@ -521,7 +521,7 @@ bool EventCategorizerTools::checkFor2Gamma4Hits2ScatteringHits(
     fhd.mT2H2MomY = gm.mom_t2h2.y();
     fhd.mT2H2MomZ = gm.mom_t2h2.z();
     fhd.mT2H2Edep = HitFinderTools::calculateTOT(shit_2,HitFinderTools::getTOTCalculationType(ap.fTOTCalculationType));
-    fhd.mT2H2Time = shit_2.getTime();
+    fhd.mT2H2Time = ns(shit_2.getTime());
     fhd.mT2H2LayerID = shit_2.getBarrelSlot().getLayer().getID();
     //Additional info
     fhd.mTheta1 = fhe.fTheta1;
